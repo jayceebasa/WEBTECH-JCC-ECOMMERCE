@@ -23,23 +23,32 @@ const DOM = {
     }
 };
 
-// Update cart badge counter
-function updateCartBadge() {
-    const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    
-    // Use a small delay to ensure badges exist in DOM
-    setTimeout(() => {
-        const badgeMobile = document.getElementById('cartCountBadgeMobile');
-        const badgeDesktop = document.getElementById('cartCountBadgeDesktop');
+// Update cart badge counter from backend
+async function updateCartBadge() {
+    try {
+        const response = await fetch('/api/cart/count');
+        if (!response.ok) {
+            throw new Error('Failed to fetch cart count');
+        }
+
+        const data = await response.json();
+        const totalItems = data.count || 0;
         
-        if (badgeMobile) badgeMobile.textContent = totalItems;
-        if (badgeDesktop) badgeDesktop.textContent = totalItems;
-    }, 100);
+        // Use a small delay to ensure badges exist in DOM
+        setTimeout(() => {
+            const badgeMobile = document.getElementById('cartCountBadgeMobile');
+            const badgeDesktop = document.getElementById('cartCountBadgeDesktop');
+            
+            if (badgeMobile) badgeMobile.textContent = totalItems;
+            if (badgeDesktop) badgeDesktop.textContent = totalItems;
+        }, 100);
+    } catch (error) {
+        console.error('Error updating cart badge:', error);
+    }
 }
 
-// Listen for storage changes (updates from other tabs/windows)
-window.addEventListener('storage', updateCartBadge);
+// Poll for cart updates from backend (every 30 seconds)
+setInterval(updateCartBadge, 30000);
 
 // Update badge on page load - with delay to ensure DOM is ready
 document.addEventListener('DOMContentLoaded', () => {

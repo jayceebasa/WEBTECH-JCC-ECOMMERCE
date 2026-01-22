@@ -67,41 +67,32 @@ function displayProductDetails(product) {
   document.title = `${product.name} - WST JCC E-Commerce`;
 }
 
-// Add to cart function
-function addToCart() {
+// Add to cart function - handled by Node.js backend
+async function addToCart() {
   if (!currentProduct) return;
 
-  // Get cart from localStorage
-  let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-  // Check if product already in cart
-  const existingItem = cart.find(item => item.id === currentProduct.id);
-
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({
-      id: currentProduct.id,
-      name: currentProduct.name,
-      price: currentProduct.price,
-      image: currentProduct.image,
-      quantity: 1,
-      material: currentProduct.material,
-      color: currentProduct.color,
-      fit: currentProduct.fit,
-      sizes: currentProduct.sizes,
-      care: currentProduct.care
+  try {
+    const response = await fetch('/api/cart/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        productId: currentProduct.id,
+        quantity: 1
+      })
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to add to cart');
+    }
+
+    showAddToCartFeedback();
+    updateCartBadge();
+  } catch (error) {
+    console.error('Error adding to cart:', error);
+    alert('Failed to add item to cart. Please try again.');
   }
-
-  // Save cart to localStorage
-  localStorage.setItem('cart', JSON.stringify(cart));
-
-  // Update cart badge
-  updateCartBadge();
-
-  // Show feedback
-  showAddToCartFeedback();
 }
 
 // Show feedback after adding to cart
