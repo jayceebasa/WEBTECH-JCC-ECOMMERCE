@@ -18,13 +18,12 @@ async function loadProductDetails() {
       return;
     }
 
-    const response = await fetch('../data/products.json');
+    const response = await fetch(`http://localhost:5000/api/products/${productId}`);
     if (!response.ok) {
-      throw new Error(`Failed to load products: ${response.status}`);
+      throw new Error(`Failed to load product: ${response.status}`);
     }
 
-    const data = await response.json();
-    const product = data.products.find(p => p.id === parseInt(productId));
+    const product = await response.json();
 
     if (!product) {
       // Product not found, redirect to shop

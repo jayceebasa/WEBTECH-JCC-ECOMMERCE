@@ -42,6 +42,41 @@ app.get('/api/test/connection', (req, res) => {
   });
 });
 
+// Get all products
+app.get('/api/products', async (req, res) => {
+  try {
+    const Product = require('./models/Product');
+    const products = await Product.find();
+    res.json({ 
+      products: products
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message 
+    });
+  }
+});
+
+// Get product by ID
+app.get('/api/products/:id', async (req, res) => {
+  try {
+    const Product = require('./models/Product');
+    const product = await Product.findOne({ id: parseInt(req.params.id) });
+    
+    if (!product) {
+      return res.status(404).json({ 
+        error: 'Product not found' 
+      });
+    }
+    
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ 
+      error: error.message 
+    });
+  }
+});
+
 // TODO: Add API routes here
 // - Cart routes
 // - Order routes
