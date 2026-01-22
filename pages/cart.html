@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cart - WST JCC E-Commerce</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Customization -->
+    <link rel="stylesheet" href="../assets/css/bootstrap/overrides.css" />
+    <link rel="stylesheet" href="../assets/css/bootstrap/header.css" />
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../assets/css/custom/main.css" />
+    <link rel="stylesheet" href="../assets/css/custom/footer.css" />
+    <link rel="stylesheet" href="../assets/css/custom/cart.css" />
+  </head>
+  <body>
+    <!-- Header will be loaded here -->
+    <header></header>
+
+    <main>
+      <div class="container">
+        <div class="products-section" id="productsSection">
+          <!-- Products will be dynamically loaded here from localStorage -->
+        </div>
+
+        <!-- Billing Section -->
+        <div class="billing-section">
+          <h2 class="billing-title">Order Summary</h2>
+
+          <div class="billing-breakdown">
+            <h3 class="breakdown-title">Items in Cart</h3>
+            <div id="items-breakdown">
+              <!-- Items will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <div class="billing-subtotal">
+            <div class="billing-row">
+              <span>Subtotal:</span>
+              <span id="subtotal">₱0.00</span>
+            </div>
+            <div class="billing-row">
+              <span>Shipping:</span>
+              <span id="shipping">₱0.00</span>
+            </div>
+          </div>
+
+          <div class="billing-row billing-total">
+            <span>Total:</span>
+            <span id="total">₱0.00</span>
+          </div>
+          <button class="buy-button" onclick="processPurchase()">Buy Now</button>
+        </div>
+      </div>
+    </main>
+    <!-- Footer will be loaded here -->
+    <footer></footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/helpers.js"></script>
+    <!-- javascript for the burger button for the header -->
+    <script src="../assets/js/header.js"></script>
+    <!-- loads the header and footer from the partials  -->
+    <script src="../assets/js/partials-loader.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/cart.js"></script>
+  </body>
+</html>

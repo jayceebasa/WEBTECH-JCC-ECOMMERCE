@@ -1,0 +1,146 @@
+/* Google Fonts Import for Footer */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+/* FOOTER */
+.main-footer {
+  background: #ffffff;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Purple divider line */
+.footer-divider {
+  width: 70%;
+  height: 2px;
+  background: linear-gradient(90deg, #a88ec3 0%, #b9acd3 50%, #a88ec3 100%);
+  margin: 0 auto;
+  margin-top: 15px !important;
+  display: block;
+}
+
+/* Footer content container */
+.footer-content {
+  padding: 8px 20px 8px;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Footer navigation */
+.footer-nav {
+  display: flex;
+  gap: 60px;
+  align-items: center;
+}
+
+.footer-link {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a093e;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  letter-spacing: 0.3px;
+}
+
+.footer-link:hover {
+  color: #4b3c68;
+}
+
+/* Social media icons */
+.footer-social {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(185, 172, 211, 0.1);
+  color: #4b3c68;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.social-link:hover {
+  background: rgba(185, 172, 211, 0.2);
+  color: #1a093e;
+  transform: translateY(-2px);
+}
+
+.social-link svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Copyright text */
+.footer-copyright {
+  text-align: center;
+}
+
+.footer-copyright p {
+  margin: 0;
+  font-size: 8px;
+  font-weight: 400;
+  color: #666;
+  letter-spacing: 0.2px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .footer-nav {
+    gap: 40px;
+  }
+  
+  .footer-link {
+    font-size: 15px;
+  }
+  
+  .footer-content {
+    padding: 28px 16px 0px;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-nav {
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .footer-link {
+    font-size: 14px;
+  }
+  
+  .social-link {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .social-link svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .footer-copyright p {
+    font-size: 13px;
+  }
+}
+
+@media (max-aspect-ratio: 3/4) and (min-width: 768px) {
+  .main-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    z-index: 100;
+  }
+}

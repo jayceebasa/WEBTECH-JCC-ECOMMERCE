@@ -1,0 +1,73 @@
+<!-- Header Layout Template - Bootstrap Navbar -->
+<header class="main-header">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top">
+        <div class="container-fluid px-4">
+            <!-- Toggle Button (Mobile) - Left Side -->
+            <button class="navbar-toggler border-0 p-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Brand/Logo (Center) -->
+            <a class="navbar-brand" href="../index.html">
+                <img src="../assets/images/jcclogo.png" alt="JCC" class="logo" height="50">
+            </a>
+            
+            <!-- Navigation Menu (Center for desktop, full-width for mobile) -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../index.html" data-page="home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="shop.html" data-page="shop">Shop</a>
+                    </li>
+                </ul>
+                
+                <!-- Mobile Actions (visible only in mobile menu) -->
+                <div class="mobile-actions d-flex align-items-center gap-3 justify-content-center">
+                    <a href="cart.html" class="cart-icon text-decoration-none">
+                        <div style="position: relative; display: inline-block;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="10" cy="19" r="1"/>
+                                <circle cx="18" cy="19" r="1"/>
+                                <path d="M5 6h15l-1.5 8.5a2 2 0 0 1-2 1.5H8.5a2 2 0 0 1-2-1.5L5 6z"/>
+                            </svg>
+                            <span class="cart-count-badge" id="cartCountBadgeMobile">0</span>
+                        </div>
+                        <span>Cart</span>
+                    </a>
+                    <button class="search-btn btn btn-link text-decoration-none p-0 d-flex align-items-center gap-2 border-0">
+                        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        <span>Search</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Actions (Right) -->
+            <div class="navbar-actions d-flex align-items-center gap-3">
+                <a href="cart.html" class="cart-icon text-decoration-none d-flex align-items-center gap-2">
+                    <div style="position: relative; display: inline-block;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="10" cy="19" r="1"/>
+                            <circle cx="18" cy="19" r="1"/>
+                            <path d="M5 6h15l-1.5 8.5a2 2 0 0 1-2 1.5H8.5a2 2 0 0 1-2-1.5L5 6z"/>
+                        </svg>
+                        <span class="cart-count-badge" id="cartCountBadgeDesktop">0</span>
+                    </div>
+                    <span>Cart</span>
+                </a>
+                <button class="search-btn btn btn-link text-decoration-none p-0 d-flex align-items-center gap-2 border-0">
+                    <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <span>Search</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <div class="header-divider"></div>
+</header>

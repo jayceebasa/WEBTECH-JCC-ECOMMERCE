@@ -1,0 +1,241 @@
+/* Google Fonts Import */
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Poppins:wght@400;500;600&display=swap');
+
+/* Shop Container */
+.shop-container {
+  background-color: #ffffff;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Shop Header with Title and Filter */
+.shop-header {
+  padding: 40px 20px 30px;
+  background-color: #ffffff;
+}
+
+.shop-header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  position: relative;
+}
+
+.shop-header h1 {
+  font-family: 'Lora', serif;
+  font-size: 2.5rem;
+  font-weight: 400;
+  color: #2e2545;
+  letter-spacing: 0.05em;
+  margin: 0;
+  flex-grow: 0;
+  text-align: center;
+}
+
+.filter-select {
+  position: absolute;
+  left: 0;
+  padding: 10px 16px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a093e;
+  border: 1.5px solid #b9acd3;
+  border-radius: 6px;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%231a093e' d='M3.204 5h9.592L8 10.481z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 36px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  width: 160px;
+  min-width: 160px;
+}
+
+.filter-select:hover {
+  border-color: #a88ec3;
+  background-color: #f9f7fc;
+}
+
+.filter-select:focus {
+  border-color: #a88ec3;
+  box-shadow: 0 0 0 3px rgba(168, 142, 195, 0.15);
+  outline: none;
+  background-color: #ffffff;
+}
+
+/* Shop Divider */
+.shop-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #d0d0d0, transparent);
+  margin-top: 20px;
+}
+
+/* Product Card */
+.product-card {
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+}
+
+.product-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+  transform: scale(1.05);
+}
+
+/* Product Info */
+.product-info {
+  padding: 16px 8px;
+  text-align: center;
+}
+
+.product-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a093e;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+}
+
+.product-price {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2e2545;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+/* Products Container Padding */
+.container {
+  padding-top: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .shop-header {
+    padding: 30px 16px 20px;
+  }
+
+  .shop-header-content {
+    justify-content: center;
+    position: relative;
+    gap: 20px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .shop-header h1 {
+    font-size: 2rem;
+    order: 1;
+  }
+
+  .filter-select {
+    position: static;
+    left: auto;
+    top: auto;
+    font-size: 13px;
+    padding: 7px 12px;
+    width: 450px;
+    order: 2;
+  }
+
+  .product-info {
+    padding: 12px 6px;
+  }
+
+  .product-name {
+    font-size: 13px;
+  }
+
+  .product-price {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .shop-header {
+    padding: 20px 16px;
+  }
+
+  .shop-header-content {
+    justify-content: center;
+    position: relative;
+    padding-top: 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .shop-header h1 {
+    font-size: 1.5rem;
+    letter-spacing: 0.02em;
+    margin: 0;
+    word-break: break-word;
+    order: 1;
+  }
+
+  .filter-select {
+    position: static;
+    left: auto;
+    top: auto;
+    font-size: 12px;
+    padding: 6px 10px;
+    width: 100%;
+    max-width: 300px;
+    order: 2;
+  }
+
+  .product-card {
+    margin-bottom: 8px;
+  }
+
+  .product-info {
+    padding: 10px 4px;
+  }
+
+  .product-name {
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  .product-price {
+    font-size: 12px;
+  }
+
+  .container {
+    padding-top: 15px;
+  }
+}
