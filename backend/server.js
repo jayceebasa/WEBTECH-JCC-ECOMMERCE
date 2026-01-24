@@ -77,10 +77,14 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
+// Auth routes
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+
 // TODO: Add API routes here
 // - Cart routes
 // - Order routes
-// - Product routes
+// - User routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {
