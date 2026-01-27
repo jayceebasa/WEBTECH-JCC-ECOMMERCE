@@ -1,36 +1,48 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-  id: {
-    type: Number,
-    unique: true,
-    required: true
-  },
   name: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
-  description: String,
-  fullDescription: String,
+  description: {
+    type: String,
+    trim: true
+  },
+  fullDescription: {
+    type: String,
+    trim: true
+  },
   price: {
     type: Number,
-    required: true
+    required: true,
+    min: 0
   },
   category: {
-    type: String,
-    enum: ['fashion', 'beauty'],
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
     required: true
   },
   image: String,
-  material: String,
-  color: String,
-  fit: String,
-  type: String,
+  details: new mongoose.Schema({
+    material: String,
+    color: String,
+    fit: String,
+    type: String,
+    care: String
+  }, { _id: false }),
   sizes: [String],
-  care: String,
-  inStock: {
-    type: Boolean,
-    default: true
+  inventory: {
+    quantity: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    inStock: {
+      type: Boolean,
+      default: true
+    }
   },
   featured: {
     type: Boolean,
@@ -39,7 +51,11 @@ const productSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);
