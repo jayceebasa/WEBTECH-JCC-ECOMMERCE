@@ -31,9 +31,10 @@ function displayProducts(products) {
   }
 
   products.forEach(product => {
+    const categoryId = typeof product.category === 'object' ? product.category._id : product.category;
     const productHTML = `
       <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
-        <div class="product-card" data-product-id="${product.id}" data-category="${product.category}">
+        <div class="product-card" data-product-id="${product._id || product.id}" data-category="${categoryId}">
           <div class="product-image">
             <img src="../${product.image}" alt="${product.name}" class="img-fluid">
           </div>
@@ -63,7 +64,13 @@ function filterByCategory(category) {
     displayProducts(allProducts);
   } else {
     // Filter products by selected category
-    const filteredProducts = allProducts.filter(product => product.category === category);
+    // Handle category as either object (populated) or string (old format)
+    const filteredProducts = allProducts.filter(product => {
+      const productCategoryName = typeof product.category === 'object' 
+        ? product.category.name.toLowerCase() 
+        : product.category.toLowerCase();
+      return productCategoryName === category.toLowerCase();
+    });
     displayProducts(filteredProducts);
   }
 }

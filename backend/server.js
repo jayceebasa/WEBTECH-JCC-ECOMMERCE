@@ -4,6 +4,10 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDB = require('./config/database');
 
+// Register models
+const Category = require('./models/Category');
+const Product = require('./models/Product');
+
 const app = express();
 
 // Middleware
@@ -45,14 +49,13 @@ app.get('/api/test/connection', (req, res) => {
 // Get all products
 app.get('/api/products', async (req, res) => {
   try {
-    const Product = require('./models/Product');
-    const products = await Product.find();
-    res.json({ 
+    const products = await Product.find().populate('category');
+    res.json({
       products: products
     });
   } catch (error) {
-    res.status(500).json({ 
-      error: error.message 
+    res.status(500).json({
+      error: error.message
     });
   }
 });
@@ -60,16 +63,73 @@ app.get('/api/products', async (req, res) => {
 // Get product by ID
 app.get('/api/products/:id', async (req, res) => {
   try {
-    const Product = require('./models/Product');
-    const product = await Product.findOne({ id: parseInt(req.params.id) });
-    
+    const mongoose = require('mongoose');
+    const id = req.params.id;
+
+    let product;
+
+    // Try to find by MongoDB _id first
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      product = await Product.findById(id).populate('category');
+    }
+
+    // If not found, try to find by old custom id field
     if (!product) {
-      return res.status(404).json({ 
-        error: 'Product not found' 
+      product = await Product.findOne({ id: parseInt(id) });
+    }
+
+    if (!product) {
+      return res.status(404).json({
+        error: 'Product not found'
       });
     }
+
+    res.json({ product });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message
+    });
+  }
+});
+
+<<<<<<< HEAD
+=======
+
+// Create a new product (CREATE)
+app.post('/api/products', async (req, res) => {
+  try {
+    // Create new product with the data from request body
+    const newProduct = new Product({
+      name: req.body.name,
+      description: req.body.description,
+      fullDescription: req.body.fullDescription,
+      price: req.body.price,
+      category: req.body.categoryId,
+      image: req.body.image,
+      details: {
+        material: req.body.material,
+        color: req.body.color,
+        fit: req.body.fit,
+        type: req.body.type,
+        care: req.body.care
+      },
+      sizes: req.body.sizes,
+      inventory: {
+        quantity: req.body.quantity || 0,
+        inStock: req.body.inStock !== false
+      },
+      featured: req.body.featured || false
+    });
     
-    res.json(product);
+    // Save to database
+    const savedProduct = await newProduct.save();
+    const populatedProduct = await Product.findById(savedProduct._id).populate('category');
+    
+    res.status(201).json({
+      message: 'Product created successfully',
+      product: populatedProduct
+    });
+    
   } catch (error) {
     res.status(500).json({ 
       error: error.message 
@@ -77,6 +137,7 @@ app.get('/api/products/:id', async (req, res) => {
   }
 });
 
+>>>>>>> 252039df65827685319a13b680e8baebc286cbb5
 // Auth routes
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);

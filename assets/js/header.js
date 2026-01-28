@@ -6,7 +6,6 @@ class Header {
 
     init() {
         this.setupMobileMenu();
-        this.updateCartCount();
         // Don't call setActiveNavigation here - it will be called from partials-loader
     }
 
@@ -61,24 +60,6 @@ class Header {
             cartIcons.forEach(icon => {
                 icon.classList.add('active');
             });
-        }
-    }
-
-    updateCartCount() {
-        const cartCount = document.querySelector('.cart-count');
-        if (cartCount) {
-            // Get cart items from localStorage or your cart system
-            const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
-            cartCount.textContent = cartItems.length;
-        }
-    }
-
-    // Method to update cart count from other parts of the application
-    static updateCartDisplay() {
-        const cartCount = document.querySelector('.cart-count');
-        if (cartCount) {
-            const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
-            cartCount.textContent = cartItems.length;
         }
     }
 }

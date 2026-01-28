@@ -23,7 +23,8 @@ async function loadProductDetails() {
       throw new Error(`Failed to load product: ${response.status}`);
     }
 
-    const product = await response.json();
+    const data = await response.json();
+    const product = data.product || data;
 
     if (!product) {
       // Product not found, redirect to shop
@@ -55,61 +56,16 @@ function displayProductDetails(product) {
   // Update description
   document.getElementById('productDescription').textContent = product.fullDescription;
 
-  // Update specifications
-  document.getElementById('specMaterial').textContent = product.material || '-';
-  document.getElementById('specColor').textContent = product.color || '-';
+  // Update specifications - handle both old and new schema formats
+  const details = product.details || product;
+  document.getElementById('specMaterial').textContent = details.material || '-';
+  document.getElementById('specColor').textContent = details.color || '-';
   document.getElementById('specSizes').textContent = product.sizes.join(', ') || '-';
-  document.getElementById('specFit').textContent = product.fit || 'Regular';
-  document.getElementById('specCare').textContent = product.care || '-';
+  document.getElementById('specFit').textContent = details.fit || 'Regular';
+  document.getElementById('specCare').textContent = details.care || '-';
 
   // Update page title
   document.title = `${product.name} - WST JCC E-Commerce`;
-}
-
-// Add to cart function - handled by Node.js backend
-async function addToCart() {
-  if (!currentProduct) return;
-
-  try {
-    const response = await fetch('/api/cart/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        productId: currentProduct.id,
-        quantity: 1
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to add to cart');
-    }
-
-    showAddToCartFeedback();
-    updateCartBadge();
-  } catch (error) {
-    console.error('Error adding to cart:', error);
-    alert('Failed to add item to cart. Please try again.');
-  }
-}
-
-// Show feedback after adding to cart
-function showAddToCartFeedback() {
-  const button = document.querySelector('.add-to-cart-btn');
-  const originalText = button.innerHTML;
-  
-  button.textContent = 'Added to Cart!';
-  button.style.backgroundColor = '#2e2545';
-  button.style.color = '#ffffff';
-  button.disabled = true;
-
-  setTimeout(() => {
-    button.innerHTML = originalText;
-    button.style.backgroundColor = '';
-    button.style.color = '';
-    button.disabled = false;
-  }, 2000);
 }
 
 // Go back function
@@ -131,10 +87,4 @@ function showError(message) {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   loadProductDetails();
-
-  // Add event listener to Add to Cart button
-  const addToCartBtn = document.querySelector('.add-to-cart-btn');
-  if (addToCartBtn) {
-    addToCartBtn.addEventListener('click', addToCart);
-  }
 });
