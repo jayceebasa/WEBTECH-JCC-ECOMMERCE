@@ -34,7 +34,7 @@ const deleteImageIfOrphaned = async (imagePath) => {
  */
 exports.getAllProducts = async (req, res) => {
   try {
-    const { q, category, featured, inStock, limit = 10, page = 1 } = req.query;
+    const { q, category, featured, inStock, limit = 10, page = 1, sort = 'newest' } = req.query;
     
     let query = {};
 
@@ -58,12 +58,47 @@ exports.getAllProducts = async (req, res) => {
       query['inventory.inStock'] = inStock === 'true';
     }
 
+    // Determine sort order
+    let sortOrder = { createdAt: -1 }; // Default: newest first
+
+    switch (sort) {
+      case 'oldest':
+        sortOrder = { createdAt: 1 };
+        break;
+      case 'name-asc':
+        sortOrder = { name: 1 };
+        break;
+      case 'name-desc':
+        sortOrder = { name: -1 };
+        break;
+      case 'price-asc':
+        sortOrder = { price: 1 };
+        break;
+      case 'price-desc':
+        sortOrder = { price: -1 };
+        break;
+      case 'stock-asc':
+        sortOrder = { 'inventory.quantity': 1 };
+        break;
+      case 'stock-desc':
+        sortOrder = { 'inventory.quantity': -1 };
+        break;
+      case 'featured':
+        sortOrder = { featured: -1, createdAt: -1 };
+        break;
+      default:
+        sortOrder = { createdAt: -1 };
+    }
+
+    console.log('🔄 Sort parameter received:', sort);
+    console.log('📊 Applied sortOrder:', JSON.stringify(sortOrder));
+
     const skip = (page - 1) * limit;
     const products = await Product.find(query)
       .populate('category', 'name')
       .limit(parseInt(limit))
       .skip(skip)
-      .sort({ createdAt: -1 });
+      .sort(sortOrder);
 
     const totalProducts = await Product.countDocuments(query);
 

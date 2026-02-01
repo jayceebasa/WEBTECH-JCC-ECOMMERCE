@@ -588,7 +588,7 @@
     <div id="product-list" class="tab-content active">
       <!-- Search and Filter Controls -->
       <div class="products-filter" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label for="searchInput" style="margin-bottom: 5px; display: block;">Search by Name</label>
             <input type="text" id="searchInput" placeholder="e.g. Winter Jacket..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
@@ -613,6 +613,20 @@
               <option value="">All Products</option>
               <option value="true">Featured Only</option>
               <option value="false">Not Featured</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="sortBy" style="margin-bottom: 5px; display: block;">Sort By</label>
+            <select id="sortBy" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+              <option value="price-asc">Price (Low-High)</option>
+              <option value="price-desc">Price (High-Low)</option>
+              <option value="stock-asc">Stock (Low-High)</option>
+              <option value="stock-desc">Stock (High-Low)</option>
+              <option value="featured">Featured First</option>
             </select>
           </div>
           <button type="button" onclick="applyFilters()" class="btn btn-primary" style="align-self: flex-end; white-space: nowrap;">Apply Filters</button>
@@ -871,6 +885,7 @@
     let totalPages = 1;
     let itemsPerPage = 20;
     let lastQueryParams = {}; // Store last query for pagination
+    let currentSort = 'newest'; // Track current sort
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', () => {
@@ -891,6 +906,14 @@
           if (e.key === 'Enter') {
             applyFilters();
           }
+        });
+      }
+
+      // Add event listener for sort dropdown - auto-apply when sort changes
+      const sortBy = document.getElementById('sortBy');
+      if (sortBy) {
+        sortBy.addEventListener('change', () => {
+          applyFilters();
         });
       }
 
@@ -959,9 +982,12 @@
       const categoryFilter = document.getElementById('filterCategory').value;
       const stockFilter = document.getElementById('filterStock').value;
       const featuredFilter = document.getElementById('filterFeatured').value;
+      currentSort = document.getElementById('sortBy').value;
+
+      console.log('📊 Applying filters - Sort value:', currentSort);
 
       try {
-        let url = `${API_BASE}/products?limit=${itemsPerPage}&page=1`;
+        let url = `${API_BASE}/products?limit=${itemsPerPage}&page=1&sort=${currentSort}`;
 
         if (searchQuery) {
           url += `&q=${encodeURIComponent(searchQuery)}`;
@@ -976,11 +1002,14 @@
           url += `&featured=${featuredFilter}`;
         }
 
+        console.log('📤 API URL:', url);
+
         lastQueryParams = { searchQuery, categoryFilter, stockFilter, featuredFilter };
 
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
+          console.log('📥 Response received, products count:', data.data?.length);
           currentPage = data.page || 1;
           totalPages = data.pages || 1;
           displayProducts(data.data || [], data);
@@ -1003,7 +1032,7 @@
     // Load all products
     async function loadProducts() {
       try {
-        const response = await fetch(`${API_BASE}/products?limit=${itemsPerPage}&page=1`);
+        const response = await fetch(`${API_BASE}/products?limit=${itemsPerPage}&page=1&sort=${currentSort}`);
         if (response.ok) {
           const data = await response.json();
           currentPage = data.page || 1;
@@ -1041,7 +1070,7 @@
     // Fetch products for current page with stored filters
     async function fetchPageProducts() {
       try {
-        let url = `${API_BASE}/products?limit=${itemsPerPage}&page=${currentPage}`;
+        let url = `${API_BASE}/products?limit=${itemsPerPage}&page=${currentPage}&sort=${currentSort}`;
 
         if (lastQueryParams.searchQuery) {
           url += `&q=${encodeURIComponent(lastQueryParams.searchQuery)}`;
