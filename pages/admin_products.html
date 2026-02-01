@@ -351,6 +351,57 @@
       color: #e74c3c;
     }
 
+    /* Stock Indicators */
+    .stock-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .stock-badge.in-stock {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .stock-badge.low-stock {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .stock-badge.out-of-stock {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .stock-quantity {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stock-quantity-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 4px;
+    }
+
+    .stock-quantity-dot.in-stock {
+      background-color: #27ae60;
+    }
+
+    .stock-quantity-dot.low-stock {
+      background-color: #f39c12;
+    }
+
+    .stock-quantity-dot.out-of-stock {
+      background-color: #e74c3c;
+    }
+
     .action-buttons {
       display: flex;
       gap: 5px;
@@ -1115,16 +1166,33 @@
       }
 
       emptyState.style.display = 'none';
-      tbody.innerHTML = products.map(product => `
+      tbody.innerHTML = products.map(product => {
+        const quantity = product.inventory?.quantity || 0;
+        const inStock = product.inventory?.inStock;
+        
+        // Determine stock status badge
+        let statusDisplay = '';
+        
+        if (!inStock || quantity === 0) {
+          statusDisplay = '<span class="stock-badge out-of-stock">Out of Stock</span>';
+        } else if (quantity < 5) {
+          statusDisplay = '<span class="stock-badge low-stock">⚠️ Low Stock</span>';
+        } else {
+          statusDisplay = '<span class="stock-badge in-stock">✓ In Stock</span>';
+        }
+
+        return `
         <tr>
           <td class="product-name">${product.name}</td>
           <td>${product.category?.name || 'N/A'}</td>
-            <td class="price">₱${product.price.toFixed(2)}</td>
-          <td>${product.inventory?.quantity || 0}</td>
+          <td class="price">₱${product.price.toFixed(2)}</td>
           <td>
-            <span class="status ${product.inventory?.inStock ? 'status-active' : 'status-inactive'}">
-              ${product.inventory?.inStock ? 'In Stock' : 'Out of Stock'}
-            </span>
+            <div class="stock-quantity">
+              <span>${quantity}</span> unit${quantity !== 1 ? 's' : ''}
+            </div>
+          </td>
+          <td>
+            ${statusDisplay}
           </td>
           <td>
             <div class="action-buttons">
@@ -1133,7 +1201,8 @@
             </div>
           </td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
 
       // Update pagination info
       if (currentPageSpan && totalPagesSpan && pageData) {
