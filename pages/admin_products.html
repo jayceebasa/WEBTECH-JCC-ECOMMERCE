@@ -588,7 +588,7 @@
     <div id="product-list" class="tab-content active">
       <!-- Search and Filter Controls -->
       <div class="products-filter" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label for="searchInput" style="margin-bottom: 5px; display: block;">Search by Name</label>
             <input type="text" id="searchInput" placeholder="e.g. Winter Jacket..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
@@ -617,6 +617,20 @@
           </div>
           <button type="button" onclick="applyFilters()" class="btn btn-primary" style="align-self: flex-end; white-space: nowrap;">Apply Filters</button>
         </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="form-group" style="margin-bottom: 0; flex: 0 0 auto;">
+            <label for="itemsPerPage" style="margin-bottom: 5px; display: block;">Items per page:</label>
+            <select id="itemsPerPage" style="padding: 8px; border: 1px solid #ddd; border-radius: 5px;" onchange="resetPaginationAndLoad()">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          <div id="paginationInfo" style="text-align: center; color: #666; font-size: 14px;">
+            Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+          </div>
+        </div>
       </div>
 
       <div class="products-table">
@@ -640,6 +654,13 @@
         <div id="emptyState" class="empty-state" style="display: none;">
           <h3>No products found</h3>
           <p>Start by adding your first product</p>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationControls" style="display: none; background: white; padding: 20px; border-radius: 10px; margin-top: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+          <button type="button" onclick="goToPreviousPage()" class="btn btn-secondary" id="prevBtn">← Previous</button>
+          <div id="pageNumbers" style="display: flex; gap: 5px;"></div>
+          <button type="button" onclick="goToNextPage()" class="btn btn-secondary" id="nextBtn">Next →</button>
         </div>
       </div>
     </div>
@@ -846,6 +867,10 @@
     const API_BASE = 'http://localhost:5000/api';
     let currentEditProductId = null;
     let categories = [];
+    let currentPage = 1;
+    let totalPages = 1;
+    let itemsPerPage = 20;
+    let lastQueryParams = {}; // Store last query for pagination
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', () => {
@@ -929,13 +954,14 @@
 
     // Apply filters to products
     async function applyFilters() {
+      currentPage = 1; // Reset to first page when applying new filters
       const searchQuery = document.getElementById('searchInput').value;
       const categoryFilter = document.getElementById('filterCategory').value;
       const stockFilter = document.getElementById('filterStock').value;
       const featuredFilter = document.getElementById('filterFeatured').value;
 
       try {
-        let url = `${API_BASE}/products?limit=100`;
+        let url = `${API_BASE}/products?limit=${itemsPerPage}&page=1`;
 
         if (searchQuery) {
           url += `&q=${encodeURIComponent(searchQuery)}`;
@@ -950,10 +976,14 @@
           url += `&featured=${featuredFilter}`;
         }
 
+        lastQueryParams = { searchQuery, categoryFilter, stockFilter, featuredFilter };
+
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
-          displayProducts(data.data || []);
+          currentPage = data.page || 1;
+          totalPages = data.pages || 1;
+          displayProducts(data.data || [], data);
         } else {
           showError('Failed to apply filters');
         }
@@ -963,13 +993,22 @@
       }
     }
 
+    // Reset pagination and reload products
+    function resetPaginationAndLoad() {
+      itemsPerPage = parseInt(document.getElementById('itemsPerPage').value);
+      currentPage = 1;
+      applyFilters();
+    }
+
     // Load all products
     async function loadProducts() {
       try {
-        const response = await fetch(`${API_BASE}/products?limit=100`);
+        const response = await fetch(`${API_BASE}/products?limit=${itemsPerPage}&page=1`);
         if (response.ok) {
           const data = await response.json();
-          displayProducts(data.data || []);
+          currentPage = data.page || 1;
+          totalPages = data.pages || 1;
+          displayProducts(data.data || [], data);
         }
       } catch (error) {
         console.error('Error loading products:', error);
@@ -977,14 +1016,72 @@
       }
     }
 
+    // Go to previous page
+    async function goToPreviousPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        fetchPageProducts();
+      }
+    }
+
+    // Go to next page
+    async function goToNextPage() {
+      if (currentPage < totalPages) {
+        currentPage++;
+        fetchPageProducts();
+      }
+    }
+
+    // Go to specific page
+    async function goToPage(page) {
+      currentPage = page;
+      fetchPageProducts();
+    }
+
+    // Fetch products for current page with stored filters
+    async function fetchPageProducts() {
+      try {
+        let url = `${API_BASE}/products?limit=${itemsPerPage}&page=${currentPage}`;
+
+        if (lastQueryParams.searchQuery) {
+          url += `&q=${encodeURIComponent(lastQueryParams.searchQuery)}`;
+        }
+        if (lastQueryParams.categoryFilter) {
+          url += `&category=${lastQueryParams.categoryFilter}`;
+        }
+        if (lastQueryParams.stockFilter) {
+          url += `&inStock=${lastQueryParams.stockFilter}`;
+        }
+        if (lastQueryParams.featuredFilter) {
+          url += `&featured=${lastQueryParams.featuredFilter}`;
+        }
+
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          currentPage = data.page || 1;
+          totalPages = data.pages || 1;
+          displayProducts(data.data || [], data);
+        }
+      } catch (error) {
+        console.error('Error fetching page:', error);
+        showError('Error loading page');
+      }
+    }
+
     // Display products in table
-    function displayProducts(products) {
+    function displayProducts(products, pageData) {
       const tbody = document.getElementById('productsTableBody');
       const emptyState = document.getElementById('emptyState');
+      const paginationControls = document.getElementById('paginationControls');
+      const currentPageSpan = document.getElementById('currentPage');
+      const totalPagesSpan = document.getElementById('totalPages');
+      const pageNumbers = document.getElementById('pageNumbers');
 
       if (products.length === 0) {
         tbody.innerHTML = '';
         emptyState.style.display = 'block';
+        if (paginationControls) paginationControls.style.display = 'none';
         return;
       }
 
@@ -1008,6 +1105,52 @@
           </td>
         </tr>
       `).join('');
+
+      // Update pagination info
+      if (currentPageSpan && totalPagesSpan && pageData) {
+        currentPageSpan.textContent = pageData.page || 1;
+        totalPagesSpan.textContent = pageData.pages || 1;
+      }
+
+      // Show/hide pagination controls
+      if (totalPages > 1) {
+        paginationControls.style.display = 'flex';
+        
+        // Update previous button
+        const prevBtn = document.getElementById('prevBtn');
+        prevBtn.disabled = currentPage === 1;
+
+        // Update next button
+        const nextBtn = document.getElementById('nextBtn');
+        nextBtn.disabled = currentPage === totalPages;
+
+        // Generate page numbers
+        pageNumbers.innerHTML = '';
+        const maxPages = Math.min(totalPages, 10); // Show max 10 page buttons
+        const startPage = Math.max(1, currentPage - 4);
+        const endPage = Math.min(totalPages, startPage + 9);
+
+        if (startPage > 1) {
+          pageNumbers.innerHTML += `<button type="button" onclick="goToPage(1)" class="btn btn-secondary" style="padding: 8px 12px;">1</button>`;
+          if (startPage > 2) {
+            pageNumbers.innerHTML += `<span style="padding: 8px 5px;">...</span>`;
+          }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          const isActive = i === currentPage;
+          pageNumbers.innerHTML += `<button type="button" onclick="goToPage(${i})" class="btn ${isActive ? 'btn-primary' : 'btn-secondary'}" style="padding: 8px 12px; ${isActive ? 'background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;' : ''}">${i}</button>`;
+        }
+
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            pageNumbers.innerHTML += `<span style="padding: 8px 5px;">...</span>`;
+          }
+          pageNumbers.innerHTML += `<button type="button" onclick="goToPage(${totalPages})" class="btn btn-secondary" style="padding: 8px 12px;">${totalPages}</button>`;
+        }
+      } else {
+        paginationControls.style.display = 'none';
+      }
     }
 
     // Switch tabs
