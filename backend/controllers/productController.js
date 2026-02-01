@@ -34,9 +34,14 @@ const deleteImageIfOrphaned = async (imagePath) => {
  */
 exports.getAllProducts = async (req, res) => {
   try {
-    const { category, featured, inStock, limit = 10, page = 1 } = req.query;
+    const { q, category, featured, inStock, limit = 10, page = 1 } = req.query;
     
     let query = {};
+
+    // Search by name if search query provided
+    if (q) {
+      query.name = { $regex: q, $options: 'i' }; // Case-insensitive search
+    }
 
     // Filter by category if provided
     if (category) {

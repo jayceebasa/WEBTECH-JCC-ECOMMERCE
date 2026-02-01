@@ -586,6 +586,39 @@
 
     <!-- Products List Tab -->
     <div id="product-list" class="tab-content active">
+      <!-- Search and Filter Controls -->
+      <div class="products-filter" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="searchInput" style="margin-bottom: 5px; display: block;">Search by Name</label>
+            <input type="text" id="searchInput" placeholder="e.g. Winter Jacket..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="filterCategory" style="margin-bottom: 5px; display: block;">Filter by Category</label>
+            <select id="filterCategory" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="filterStock" style="margin-bottom: 5px; display: block;">Stock Status</label>
+            <select id="filterStock" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+              <option value="">All Items</option>
+              <option value="true">In Stock</option>
+              <option value="false">Out of Stock</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="filterFeatured" style="margin-bottom: 5px; display: block;">Featured</label>
+            <select id="filterFeatured" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+              <option value="">All Products</option>
+              <option value="true">Featured Only</option>
+              <option value="false">Not Featured</option>
+            </select>
+          </div>
+          <button type="button" onclick="applyFilters()" class="btn btn-primary" style="align-self: flex-end; white-space: nowrap;">Apply Filters</button>
+        </div>
+      </div>
+
       <div class="products-table">
         <table>
           <thead>
@@ -825,6 +858,28 @@
           showError('Unable to connect to backend server');
         }
       });
+
+      // Add event listeners for search and filter inputs
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            applyFilters();
+          }
+        });
+      }
+
+      // Clear filters when inputs change (optional - for instant search)
+      const filterInputs = ['searchInput', 'filterCategory', 'filterStock', 'filterFeatured'];
+      filterInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+          input.addEventListener('change', () => {
+            // Auto-apply on filter change (uncomment for instant filtering)
+            // applyFilters();
+          });
+        }
+      });
     });
 
     // Check if user is authenticated
@@ -855,7 +910,7 @@
 
     // Populate category select elements
     function populateCategorySelects() {
-      const categorySelects = ['productCategory', 'editProductCategory'];
+      const categorySelects = ['productCategory', 'editProductCategory', 'filterCategory'];
       categorySelects.forEach(selectId => {
         const select = document.getElementById(selectId);
         if (select) {
@@ -870,6 +925,42 @@
           select.value = currentValue;
         }
       });
+    }
+
+    // Apply filters to products
+    async function applyFilters() {
+      const searchQuery = document.getElementById('searchInput').value;
+      const categoryFilter = document.getElementById('filterCategory').value;
+      const stockFilter = document.getElementById('filterStock').value;
+      const featuredFilter = document.getElementById('filterFeatured').value;
+
+      try {
+        let url = `${API_BASE}/products?limit=100`;
+
+        if (searchQuery) {
+          url += `&q=${encodeURIComponent(searchQuery)}`;
+        }
+        if (categoryFilter) {
+          url += `&category=${categoryFilter}`;
+        }
+        if (stockFilter) {
+          url += `&inStock=${stockFilter}`;
+        }
+        if (featuredFilter) {
+          url += `&featured=${featuredFilter}`;
+        }
+
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          displayProducts(data.data || []);
+        } else {
+          showError('Failed to apply filters');
+        }
+      } catch (error) {
+        console.error('Error applying filters:', error);
+        showError('Error applying filters');
+      }
     }
 
     // Load all products
