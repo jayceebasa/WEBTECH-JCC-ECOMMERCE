@@ -522,16 +522,21 @@
     // Load dashboard statistics
     async function loadDashboardStats() {
       try {
-        // Fetch products count
-        const productsRes = await fetch('/api/products');
+        // Fetch products count from API
+        const productsRes = await fetch('http://localhost:5000/api/products?limit=1');
         if (productsRes.ok) {
           const productsData = await productsRes.json();
-          document.getElementById('totalProducts').textContent = 
-            Array.isArray(productsData.data) ? productsData.data.length : '0';
+          // Access the total count from response
+          const total = productsData.total || productsData.data?.length || 0;
+          document.getElementById('totalProducts').textContent = total;
+          console.log('✓ Loaded total products:', total);
+        } else {
+          console.warn('Failed to fetch products');
+          document.getElementById('totalProducts').textContent = '0';
         }
       } catch (error) {
-        console.log('Note: Stats require backend API endpoints');
-        // Set placeholder values
+        console.error('Error loading dashboard stats:', error);
+        // Set placeholder values if API not available
         document.getElementById('totalProducts').textContent = '0';
         document.getElementById('totalOrders').textContent = '0';
         document.getElementById('totalCustomers').textContent = '0';
