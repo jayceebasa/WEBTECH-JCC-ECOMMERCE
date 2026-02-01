@@ -388,7 +388,7 @@
   <!-- Sidebar -->
   <div class="sidebar">
     <a href="#dashboard" class="active" onclick="navigateTo('dashboard')">📊 Dashboard</a>
-    <a href="#products" onclick="navigateTo('products')">📦 Products</a>
+    <a href="admin_products.html" onclick="navigateTo('products')">📦 Products</a>
     <a href="#orders" onclick="navigateTo('orders')">🛒 Orders</a>
     <a href="#customers" onclick="navigateTo('customers')">👥 Customers</a>
     <a href="#analytics" onclick="navigateTo('analytics')">📈 Analytics</a>
@@ -405,12 +405,14 @@
 
     <!-- Dashboard Stats -->
     <div class="dashboard-grid">
-      <div class="card" onclick="navigateTo('products')">
-        <div class="card-icon">📦</div>
-        <h3>Total Products</h3>
-        <div class="card-stat" id="totalProducts">--</div>
-        <div class="card-label">Active products in store</div>
-      </div>
+      <a href="admin_products.html" style="text-decoration: none; cursor: pointer;">
+        <div class="card">
+          <div class="card-icon">📦</div>
+          <h3>Total Products</h3>
+          <div class="card-stat" id="totalProducts">--</div>
+          <div class="card-label">Active products in store</div>
+        </div>
+      </a>
 
       <div class="card card-border-success" onclick="navigateTo('orders')">
         <div class="card-icon">🛒</div>
@@ -438,7 +440,7 @@
     <div class="quick-actions">
       <h2>Quick Actions</h2>
       <div class="action-buttons">
-        <button class="btn btn-primary" onclick="navigateTo('add-product')">➕ Add New Product</button>
+        <a href="admin_products.html" class="btn btn-primary">➕ Add New Product</a>
         <button class="btn btn-success" onclick="navigateTo('view-orders')">📋 View Orders</button>
         <button class="btn btn-warning" onclick="navigateTo('manage-inventory')">📊 Manage Inventory</button>
         <button class="btn btn-secondary" onclick="navigateTo('settings')">⚙️ Settings</button>
@@ -533,7 +535,7 @@
         document.getElementById('totalProducts').textContent = '0';
         document.getElementById('totalOrders').textContent = '0';
         document.getElementById('totalCustomers').textContent = '0';
-        document.getElementById('totalRevenue').textContent = '$0.00';
+        document.getElementById('totalRevenue').textContent = '₱0.00';
       }
     }
 

@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 const connectDB = require('./config/database');
 
 // Register models
@@ -14,6 +15,9 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Serve static files from assets folder
+app.use('/assets', express.static(path.join(__dirname, '..', 'assets')));
 
 // Connect to MongoDB
 connectDB();
@@ -49,9 +53,11 @@ app.get('/api/test/connection', (req, res) => {
 // API Routes
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
+const categoryRoutes = require('./routes/categories');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
 
 // TODO: Add more API routes here
 // - Cart routes

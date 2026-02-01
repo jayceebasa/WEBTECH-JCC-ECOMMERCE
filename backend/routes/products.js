@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
+const upload = require('../middleware/uploadMiddleware');
 
 // Public routes
 /**
@@ -22,26 +23,28 @@ router.get('/featured', productController.getFeaturedProducts);
 router.get('/search', productController.searchProducts);
 
 /**
- * Get single product by ID
- */
-router.get('/:id', productController.getProductById);
-
-/**
  * Get products by category
  * Query params: limit, page
+ * NOTE: Must be before /:id route to avoid conflict
  */
 router.get('/category/:categoryId', productController.getProductsByCategory);
 
+/**
+ * Get single product by ID
+ * NOTE: This must be after specific routes like /featured, /search, /category
+ */
+router.get('/:id', productController.getProductById);
+
 // Protected routes (Admin only)
 /**
- * Create new product
+ * Create new product with image upload
  */
-router.post('/', productController.createProduct);
+router.post('/', upload.single('imageFile'), productController.createProduct);
 
 /**
- * Update product
+ * Update product with optional image upload
  */
-router.put('/:id', productController.updateProduct);
+router.put('/:id', upload.single('imageFile'), productController.updateProduct);
 
 /**
  * Delete product

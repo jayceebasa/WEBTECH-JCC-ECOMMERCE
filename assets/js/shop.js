@@ -4,12 +4,13 @@ let allProducts = [];
 // Load products from backend database
 async function loadProducts() {
   try {
-    const response = await fetch('http://localhost:5000/api/products');
+    const response = await fetch('http://localhost:5000/api/products?limit=100');
     if (!response.ok) {
       throw new Error(`Failed to load products: ${response.status}`);
     }
     const data = await response.json();
-    allProducts = data.products;
+    // API returns products in data.data
+    allProducts = data.data || data.products || [];
     displayProducts(allProducts);
   } catch (error) {
     console.error('Error loading products:', error);
@@ -32,11 +33,16 @@ function displayProducts(products) {
 
   products.forEach(product => {
     const categoryId = typeof product.category === 'object' ? product.category._id : product.category;
+    // Handle image path - if it's a URL or base64, use as-is; otherwise prepend ../
+    const imagePath = (product.image && (product.image.startsWith('http') || product.image.startsWith('data:'))) 
+      ? product.image 
+      : (product.image ? `../${product.image}` : '../assets/images/placeholder.png');
+    
     const productHTML = `
       <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
         <div class="product-card" data-product-id="${product._id || product.id}" data-category="${categoryId}">
           <div class="product-image">
-            <img src="../${product.image}" alt="${product.name}" class="img-fluid">
+            <img src="${imagePath}" alt="${product.name}" class="img-fluid" onerror="this.src='../assets/images/placeholder.png'">
           </div>
           <div class="product-info">
             <h3 class="product-name">${product.name}</h3>

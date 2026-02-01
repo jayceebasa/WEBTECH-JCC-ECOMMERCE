@@ -90,21 +90,57 @@ exports.getProductById = async (req, res) => {
  */
 exports.createProduct = async (req, res) => {
   try {
+    console.log('=== CREATE PRODUCT REQUEST ===');
+    console.log('File:', req.file);
+    console.log('Body keys:', Object.keys(req.body));
+
     const {
       name,
       description,
       fullDescription,
       price,
       category,
-      image,
-      details,
       sizes,
-      inventory,
       featured
     } = req.body;
 
+    console.log('Extracted fields:', { name, price, category, sizes: sizes?.substring(0, 50) });
+
+    // Parse JSON strings from FormData
+    let details = {};
+    let inventory = { quantity: 0, inStock: false };
+    
+    try {
+      if (req.body.details && typeof req.body.details === 'string') {
+        details = JSON.parse(req.body.details);
+      } else if (req.body.details) {
+        details = req.body.details;
+      }
+      
+      if (req.body.inventory && typeof req.body.inventory === 'string') {
+        inventory = JSON.parse(req.body.inventory);
+      } else if (req.body.inventory) {
+        inventory = req.body.inventory;
+      }
+    } catch (parseError) {
+      console.error('Error parsing details/inventory JSON:', parseError);
+    }
+
+    // Parse sizes if it's a string
+    let sizeArray = [];
+    if (sizes) {
+      if (typeof sizes === 'string') {
+        sizeArray = sizes.split(',').map(s => s.trim()).filter(s => s);
+      } else if (Array.isArray(sizes)) {
+        sizeArray = sizes;
+      }
+    }
+
+    console.log('Parsed data:', { sizeArray, details, inventory });
+
     // Validate required fields
     if (!name || !price || !category) {
+      console.error('Missing required fields:', { name, price, category });
       return res.status(400).json({
         success: false,
         message: 'Name, price, and category are required'
@@ -114,10 +150,25 @@ exports.createProduct = async (req, res) => {
     // Verify category exists
     const categoryExists = await Category.findById(category);
     if (!categoryExists) {
+      console.error('Category not found:', category);
       return res.status(400).json({
         success: false,
         message: 'Category does not exist'
       });
+    }
+
+    // Handle image - either from file upload or base64
+    let imagePath = '';
+    if (req.file) {
+      // If file was uploaded, construct the relative path
+      imagePath = `/assets/images/products/${req.file.filename}`;
+      console.log('File uploaded, image path:', imagePath);
+    } else if (req.body.image) {
+      // Fallback to base64 if provided (for backward compatibility)
+      imagePath = req.body.image;
+      console.log('Using base64 image');
+    } else {
+      console.log('No image provided');
     }
 
     // Create product
@@ -127,15 +178,17 @@ exports.createProduct = async (req, res) => {
       fullDescription,
       price,
       category,
-      image,
+      image: imagePath,
       details,
-      sizes,
+      sizes: sizeArray,
       inventory,
-      featured
+      featured: featured === 'true' || featured === true
     });
 
     await product.save();
     await product.populate('category', 'name');
+
+    console.log('✓ Product created:', product._id);
 
     res.status(201).json({
       success: true,
@@ -143,6 +196,7 @@ exports.createProduct = async (req, res) => {
       data: product
     });
   } catch (error) {
+    console.error('✗ Error creating product:', error);
     res.status(500).json({
       success: false,
       message: 'Error creating product',
@@ -181,6 +235,38 @@ exports.updateProduct = async (req, res) => {
       }
     }
 
+    // Parse JSON strings from FormData
+    if (updates.details && typeof updates.details === 'string') {
+      try {
+        updates.details = JSON.parse(updates.details);
+      } catch (e) {
+        console.error('Error parsing details:', e);
+      }
+    }
+
+    if (updates.inventory && typeof updates.inventory === 'string') {
+      try {
+        updates.inventory = JSON.parse(updates.inventory);
+      } catch (e) {
+        console.error('Error parsing inventory:', e);
+      }
+    }
+
+    // Parse sizes if it's a string
+    if (updates.sizes && typeof updates.sizes === 'string') {
+      updates.sizes = updates.sizes.split(',').map(s => s.trim()).filter(s => s);
+    }
+
+    // Handle image - if new file uploaded, use that path
+    if (req.file) {
+      updates.image = `/assets/images/products/${req.file.filename}`;
+    } else if (updates.image && updates.image.startsWith('data:')) {
+      // If base64 is provided (backward compatibility), keep it as is
+    } else if (!req.file && !updates.image) {
+      // If no new image provided, keep the existing one
+      updates.image = product.image;
+    }
+
     // Update product
     product = await Product.findByIdAndUpdate(
       id,
@@ -194,6 +280,7 @@ exports.updateProduct = async (req, res) => {
       data: product
     });
   } catch (error) {
+    console.error('Error updating product:', error);
     res.status(500).json({
       success: false,
       message: 'Error updating product',
