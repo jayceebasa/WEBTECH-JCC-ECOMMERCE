@@ -639,7 +639,7 @@
     <div id="product-list" class="tab-content active">
       <!-- Search and Filter Controls -->
       <div class="products-filter" style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end; margin-bottom: 15px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label for="searchInput" style="margin-bottom: 5px; display: block;">Search by Name</label>
             <input type="text" id="searchInput" placeholder="e.g. Winter Jacket..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
@@ -664,6 +664,14 @@
               <option value="">All Products</option>
               <option value="true">Featured Only</option>
               <option value="false">Not Featured</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="filterPublished" style="margin-bottom: 5px; display: block;">Status</label>
+            <select id="filterPublished" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+              <option value="">All Products</option>
+              <option value="true">Published</option>
+              <option value="false">Draft</option>
             </select>
           </div>
           <div class="form-group" style="margin-bottom: 0;">
@@ -707,12 +715,13 @@
               <th>Price</th>
               <th>Stock</th>
               <th>Status</th>
+              <th>Published</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="productsTableBody">
             <tr>
-              <td colspan="6" class="loading">Loading products...</td>
+              <td colspan="7" class="loading">Loading products...</td>
             </tr>
           </tbody>
         </table>
@@ -787,6 +796,12 @@
               <label for="productFeatured">
                 <input type="checkbox" id="productFeatured" name="featured">
                 Featured Product
+              </label>
+            </div>
+            <div class="form-group">
+              <label for="productPublished">
+                <input type="checkbox" id="productPublished" name="published" checked>
+                Publish (visible in shop)
               </label>
             </div>
           </div>
@@ -887,6 +902,16 @@
           <div class="form-group">
             <label for="editProductSizes">Sizes (comma separated)</label>
             <input type="text" id="editProductSizes" name="sizes" placeholder="e.g., XS, S, M, L, XL">
+          </div>
+          <div class="form-group" style="display: flex; flex-direction: column; justify-content: flex-end;">
+            <label for="editProductFeatured">
+              <input type="checkbox" id="editProductFeatured" name="featured">
+              Featured Product
+            </label>
+            <label for="editProductPublished">
+              <input type="checkbox" id="editProductPublished" name="published">
+              Publish (visible in shop)
+            </label>
           </div>
         </div>
 
@@ -1033,6 +1058,7 @@
       const categoryFilter = document.getElementById('filterCategory').value;
       const stockFilter = document.getElementById('filterStock').value;
       const featuredFilter = document.getElementById('filterFeatured').value;
+      const publishedFilter = document.getElementById('filterPublished').value;
       currentSort = document.getElementById('sortBy').value;
 
       console.log('📊 Applying filters - Sort value:', currentSort);
@@ -1052,10 +1078,13 @@
         if (featuredFilter) {
           url += `&featured=${featuredFilter}`;
         }
+        if (publishedFilter) {
+          url += `&published=${publishedFilter}`;
+        }
 
         console.log('📤 API URL:', url);
 
-        lastQueryParams = { searchQuery, categoryFilter, stockFilter, featuredFilter };
+        lastQueryParams = { searchQuery, categoryFilter, stockFilter, featuredFilter, publishedFilter };
 
         const response = await fetch(url);
         if (response.ok) {
@@ -1135,6 +1164,9 @@
         if (lastQueryParams.featuredFilter) {
           url += `&featured=${lastQueryParams.featuredFilter}`;
         }
+        if (lastQueryParams.publishedFilter) {
+          url += `&published=${lastQueryParams.publishedFilter}`;
+        }
 
         const response = await fetch(url);
         if (response.ok) {
@@ -1193,6 +1225,11 @@
           </td>
           <td>
             ${statusDisplay}
+          </td>
+          <td>
+            <span class="stock-badge ${product.published ? 'in-stock' : 'out-of-stock'}" style="font-size: 11px;">
+              ${product.published ? '📤 Published' : '📋 Draft'}
+            </span>
           </td>
           <td>
             <div class="action-buttons">
@@ -1291,6 +1328,7 @@
       const sizesArray = document.getElementById('productSizes').value.split(',').map(size => size.trim()).filter(size => size);
       formDataToSend.append('sizes', sizesArray.join(','));
       formDataToSend.append('featured', document.getElementById('productFeatured').checked);
+      formDataToSend.append('published', document.getElementById('productPublished').checked);
       
       // Add details as JSON string
       const details = {
@@ -1389,6 +1427,10 @@
         setFieldValue('editProductType', product.details?.type || '');
         setFieldValue('editProductCare', product.details?.care || '');
         
+        // Set checkbox values
+        document.getElementById('editProductFeatured').checked = product.featured || false;
+        document.getElementById('editProductPublished').checked = product.published !== false; // Default to true if not specified
+        
         // Display image preview
         const imagePreview = document.getElementById('editProductImagePreview');
         if (!imagePreview) {
@@ -1459,6 +1501,8 @@
       // Add sizes as comma-separated string (will be parsed on backend)
       const sizesArray = document.getElementById('editProductSizes').value.split(',').map(size => size.trim()).filter(size => size);
       formDataToSend.append('sizes', sizesArray.join(','));
+      formDataToSend.append('featured', document.getElementById('editProductFeatured').checked);
+      formDataToSend.append('published', document.getElementById('editProductPublished').checked);
       
       // Add details as JSON string
       const details = {

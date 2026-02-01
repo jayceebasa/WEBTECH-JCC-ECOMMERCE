@@ -34,7 +34,7 @@ const deleteImageIfOrphaned = async (imagePath) => {
  */
 exports.getAllProducts = async (req, res) => {
   try {
-    const { q, category, featured, inStock, limit = 10, page = 1, sort = 'newest' } = req.query;
+    const { q, category, featured, inStock, published, limit = 10, page = 1, sort = 'newest' } = req.query;
     
     let query = {};
 
@@ -56,6 +56,11 @@ exports.getAllProducts = async (req, res) => {
     // Filter by stock status if provided
     if (inStock !== undefined) {
       query['inventory.inStock'] = inStock === 'true';
+    }
+
+    // Filter by published status if provided
+    if (published !== undefined) {
+      query.published = published === 'true';
     }
 
     // Determine sort order
@@ -167,7 +172,8 @@ exports.createProduct = async (req, res) => {
       price,
       category,
       sizes,
-      featured
+      featured,
+      published
     } = req.body;
 
     console.log('Extracted fields:', { name, price, category, sizes: sizes?.substring(0, 50) });
@@ -248,7 +254,8 @@ exports.createProduct = async (req, res) => {
       details,
       sizes: sizeArray,
       inventory,
-      featured: featured === 'true' || featured === true
+      featured: featured === 'true' || featured === true,
+      published: published === 'true' || published === true || published === undefined // Default to true
     });
 
     await product.save();
@@ -280,6 +287,11 @@ exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
+
+    // Parse published field if it's a string
+    if (updates.published !== undefined) {
+      updates.published = updates.published === 'true' || updates.published === true;
+    }
 
     // Verify product exists
     let product = await Product.findById(id);
@@ -407,7 +419,7 @@ exports.getFeaturedProducts = async (req, res) => {
   try {
     const { limit = 8 } = req.query;
 
-    const products = await Product.find({ featured: true })
+    const products = await Product.find({ featured: true, published: true })
       .populate('category', 'name')
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
