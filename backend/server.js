@@ -46,103 +46,18 @@ app.get('/api/test/connection', (req, res) => {
   });
 });
 
-// Get all products
-app.get('/api/products', async (req, res) => {
-  try {
-    const products = await Product.find().populate('category');
-    res.json({
-      products: products
-    });
-  } catch (error) {
-    res.status(500).json({
-      error: error.message
-    });
-  }
-});
-
-// Get product by ID
-app.get('/api/products/:id', async (req, res) => {
-  try {
-    const mongoose = require('mongoose');
-    const id = req.params.id;
-
-    let product;
-
-    // Try to find by MongoDB _id first
-    if (mongoose.Types.ObjectId.isValid(id)) {
-      product = await Product.findById(id).populate('category');
-    }
-
-    // If not found, try to find by old custom id field
-    if (!product) {
-      product = await Product.findOne({ id: parseInt(id) });
-    }
-
-    if (!product) {
-      return res.status(404).json({
-        error: 'Product not found'
-      });
-    }
-
-    res.json({ product });
-  } catch (error) {
-    res.status(500).json({
-      error: error.message
-    });
-  }
-});
-
-
-// Create a new product (CREATE)
-app.post('/api/products', async (req, res) => {
-  try {
-    // Create new product with the data from request body
-    const newProduct = new Product({
-      name: req.body.name,
-      description: req.body.description,
-      fullDescription: req.body.fullDescription,
-      price: req.body.price,
-      category: req.body.categoryId,
-      image: req.body.image,
-      details: {
-        material: req.body.material,
-        color: req.body.color,
-        fit: req.body.fit,
-        type: req.body.type,
-        care: req.body.care
-      },
-      sizes: req.body.sizes,
-      inventory: {
-        quantity: req.body.quantity || 0,
-        inStock: req.body.inStock !== false
-      },
-      featured: req.body.featured || false
-    });
-    
-    // Save to database
-    const savedProduct = await newProduct.save();
-    const populatedProduct = await Product.findById(savedProduct._id).populate('category');
-    
-    res.status(201).json({
-      message: 'Product created successfully',
-      product: populatedProduct
-    });
-    
-  } catch (error) {
-    res.status(500).json({ 
-      error: error.message 
-    });
-  }
-});
-
-// Auth routes
+// API Routes
 const authRoutes = require('./routes/auth');
-app.use('/api/auth', authRoutes);
+const productRoutes = require('./routes/products');
 
-// TODO: Add API routes here
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+
+// TODO: Add more API routes here
 // - Cart routes
 // - Order routes
 // - User routes
+// - Category routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {
