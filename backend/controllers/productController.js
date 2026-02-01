@@ -1,5 +1,31 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
+const path = require('path');
+const fs = require('fs');
+
+// Helper function to delete image file if not used by other products
+const deleteImageIfOrphaned = async (imagePath) => {
+  if (!imagePath || imagePath.startsWith('http') || imagePath.startsWith('data:')) {
+    return; // Don't delete cloud URLs or base64
+  }
+
+  try {
+    // Check if any other product uses this image
+    const count = await Product.countDocuments({ image: imagePath });
+    
+    if (count === 0) {
+      // No other product uses this image, safe to delete
+      const filePath = path.join(__dirname, '..', '..', imagePath.replace(/^\//, ''));
+      
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log('🗑 Deleted orphaned image:', imagePath);
+      }
+    }
+  } catch (error) {
+    console.error('Error checking/deleting orphaned image:', error.message);
+  }
+};
 
 /**
  * @desc    Get all products
@@ -259,6 +285,10 @@ exports.updateProduct = async (req, res) => {
 
     // Handle image - if new file uploaded, use that path
     if (req.file) {
+      // Delete old image if it's being replaced
+      if (product.image && product.image.startsWith('/assets/images/products/')) {
+        await deleteImageIfOrphaned(product.image);
+      }
       updates.image = `/assets/images/products/${req.file.filename}`;
     } else if (updates.image && updates.image.startsWith('data:')) {
       // If base64 is provided (backward compatibility), keep it as is
@@ -306,6 +336,11 @@ exports.deleteProduct = async (req, res) => {
       });
     }
 
+    // Delete the product's image if it's not used by other products
+    if (product.image && product.image.startsWith('/assets/images/products/')) {
+      await deleteImageIfOrphaned(product.image);
+    }
+
     await Product.findByIdAndDelete(id);
 
     res.status(200).json({
@@ -314,6 +349,7 @@ exports.deleteProduct = async (req, res) => {
       data: { id }
     });
   } catch (error) {
+    console.error('Error deleting product:', error);
     res.status(500).json({
       success: false,
       message: 'Error deleting product',
