@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
+const { protect } = require('../middleware/authMiddleware');
 
 // Public routes
 /**
@@ -17,16 +18,16 @@ router.get('/:id', categoryController.getCategoryById);
 /**
  * Create new category
  */
-router.post('/', categoryController.createCategory);
+router.post('/', protect, categoryController.createCategory);
 
 /**
  * Update category
  */
-router.put('/:id', categoryController.updateCategory);
+router.put('/:id', protect, categoryController.updateCategory);
 
 /**
  * Delete category
  */
-router.delete('/:id', categoryController.deleteCategory);
+router.delete('/:id', protect, categoryController.deleteCategory);
 
 module.exports = router;

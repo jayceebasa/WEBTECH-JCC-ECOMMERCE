@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
 const upload = require('../middleware/uploadMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 // Public routes
 /**
@@ -39,21 +40,21 @@ router.get('/:id', productController.getProductById);
 /**
  * Create new product with image upload
  */
-router.post('/', upload.single('imageFile'), productController.createProduct);
+router.post('/', protect, upload.single('imageFile'), productController.createProduct);
 
 /**
  * Update product with optional image upload
  */
-router.put('/:id', upload.single('imageFile'), productController.updateProduct);
+router.put('/:id', protect, upload.single('imageFile'), productController.updateProduct);
 
 /**
  * Delete product
  */
-router.delete('/:id', productController.deleteProduct);
+router.delete('/:id', protect, productController.deleteProduct);
 
 /**
  * Update product inventory
  */
-router.put('/:id/inventory', productController.updateInventory);
+router.put('/:id/inventory', protect, productController.updateInventory);
 
 module.exports = router;

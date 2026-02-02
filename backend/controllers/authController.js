@@ -1,4 +1,9 @@
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-change-in-production';
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
 
 /**
  * @desc    Login admin user
@@ -25,6 +30,16 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Check if account is locked
+    if (user.lockUntil && user.lockUntil > new Date()) {
+      const minutesLeft = Math.ceil((user.lockUntil - new Date()) / 60000);
+      console.log(`🔒 Account locked for ${user.email}. Retry in ${minutesLeft} minutes`);
+      return res.status(429).json({
+        success: false,
+        message: `Account locked. Try again in ${minutesLeft} minutes`
+      });
+    }
+
     if (user.role !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -35,13 +50,40 @@ exports.login = async (req, res) => {
     const isPasswordMatch = await user.matchPassword(password);
 
     if (!isPasswordMatch) {
+      // Increment failed login attempts
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      
+      if (user.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        // Lock account for 15 minutes
+        user.lockUntil = new Date(Date.now() + LOCK_TIME);
+        console.log(`🔒 Account locked for ${user.email} after ${MAX_LOGIN_ATTEMPTS} failed attempts`);
+      }
+      
+      await user.save();
+      
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: 'Invalid credentials',
+        attemptsLeft: MAX_LOGIN_ATTEMPTS - user.loginAttempts
       });
     }
 
-    const token = Buffer.from(`${user._id}:${Date.now()}`).toString('base64');
+    // Successful login - reset login attempts
+    user.loginAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
+
+    // Generate JWT with tokenVersion for session invalidation
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        tokenVersion: user.tokenVersion
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' } // 24 hour expiration
+    );
+
+    console.log(`✅ User ${user.email} logged in successfully`);
 
     // Set httpOnly cookie (secure)
     res.cookie('adminToken', token, {
@@ -63,7 +105,7 @@ exports.login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error during login',
