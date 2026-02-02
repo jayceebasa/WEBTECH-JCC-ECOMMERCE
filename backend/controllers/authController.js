@@ -43,10 +43,17 @@ exports.login = async (req, res) => {
 
     const token = Buffer.from(`${user._id}:${Date.now()}`).toString('base64');
 
+    // Set httpOnly cookie (secure)
+    res.cookie('adminToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
     res.status(200).json({
       success: true,
       message: 'Login successful',
-      token,
       user: {
         id: user._id,
         email: user.email,
@@ -106,6 +113,16 @@ exports.getMe = async (req, res) => {
  * @access  Private
  */
 exports.logout = async (req, res) => {
+  // Clear cookie with EXACT same options as when it was set
+  res.cookie('adminToken', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 0 // Expire immediately
+  });
+
+  console.log('✅ Logout successful, cookie cleared');
+
   res.status(200).json({
     success: true,
     message: 'Logged out successfully'

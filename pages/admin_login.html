@@ -57,36 +57,20 @@
       font-size: 14px;
     }
     
-    input {
+    input[type="email"],
+    input[type="password"] {
       width: 100%;
       padding: 12px;
       border: 1px solid #ddd;
       border-radius: 5px;
       font-size: 14px;
-      transition: border-color 0.3s;
     }
     
-    input:focus {
+    input[type="email"]:focus,
+    input[type="password"]:focus {
       outline: none;
       border-color: #667eea;
       box-shadow: 0 0 5px rgba(102, 126, 234, 0.1);
-    }
-    
-    .remember-forgot {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      font-size: 14px;
-    }
-    
-    .remember-forgot a {
-      color: #667eea;
-      text-decoration: none;
-    }
-    
-    .remember-forgot a:hover {
-      text-decoration: underline;
     }
     
     button {
@@ -99,15 +83,15 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s;
     }
     
     button:hover {
       transform: translateY(-2px);
     }
-    
-    button:active {
-      transform: translateY(0);
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .error-message {
@@ -141,9 +125,28 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    .preview-mode {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      text-align: center;
+    }
+
+    #previewModeBtn {
+      background: none;
+      border: none;
+      color: #667eea;
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 12px;
+      padding: 0;
+    }
   </style>
 </head>
 <body>
+  <script src="../assets/js/admin-auth.js"></script>
+
   <div class="login-container">
     <div class="login-header">
       <h1>Admin Panel</h1>
@@ -162,13 +165,6 @@
         <label for="password">Password</label>
         <input type="password" id="password" name="password" placeholder="Enter your password" required>
       </div>
-      
-      <div class="remember-forgot">
-        <label style="margin: 0;">
-          <input type="checkbox" name="remember"> Remember me
-        </label>
-        <a href="#">Forgot Password?</a>
-      </div>
 
       <div class="loading" id="loading">
         <div class="spinner"></div>
@@ -177,77 +173,48 @@
       
       <button type="submit" id="submitBtn">Sign In</button>
     </form>
+
+    <div class="preview-mode">
+      <small style="color: #999;">Backend not running? <button type="button" id="previewModeBtn">Enable Preview Mode</button></small>
+    </div>
   </div>
 
   <script>
-    // Handle login form submission
     async function handleLogin(event) {
       event.preventDefault();
       
-      const email = document.getElementById('email').value;
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
       const errorMessage = document.getElementById('errorMessage');
       const loading = document.getElementById('loading');
       const submitBtn = document.getElementById('submitBtn');
 
-      // Clear previous error
       errorMessage.style.display = 'none';
-      errorMessage.textContent = '';
-
-      // Show loading state
       loading.style.display = 'block';
       submitBtn.disabled = true;
 
       try {
-        // Send login request to backend
-        const response = await fetch('http://127.0.0.1:5000/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ email, password })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          // Store authentication data
-          localStorage.setItem('adminEmail', email);
-          localStorage.setItem('adminToken', data.token || '');
-          
-          // Redirect to dashboard
+        const result = await adminAuth.login(email, password);
+        if (result.success) {
           window.location.href = 'admin_dashboard.html';
         } else {
-          // Show error message
-          errorMessage.textContent = data.message || 'Invalid email or password';
+          errorMessage.textContent = result.message;
           errorMessage.style.display = 'block';
         }
       } catch (error) {
-        console.error('Login error:', error);
-        
-        // For testing purposes, allow hardcoded login
-        if (email === 'admin@webtech-jcc.com' && password === 'admin123') {
-          localStorage.setItem('adminEmail', email);
-          localStorage.setItem('adminToken', 'test-token');
-          window.location.href = 'admin_dashboard.html';
-        } else {
-          errorMessage.textContent = 'Connection error. Please try again.';
-          errorMessage.style.display = 'block';
-        }
+        errorMessage.textContent = 'Login error. Please try again.';
+        errorMessage.style.display = 'block';
       } finally {
-        // Hide loading state
         loading.style.display = 'none';
         submitBtn.disabled = false;
       }
     }
 
-    // Check if already logged in
-    window.addEventListener('DOMContentLoaded', () => {
-      const adminToken = localStorage.getItem('adminToken');
-      if (adminToken) {
-        window.location.href = 'admin_dashboard.html';
-      }
+    document.getElementById('previewModeBtn').addEventListener('click', () => {
+      localStorage.setItem('adminPreviewMode', 'true');
+      window.location.href = 'admin_dashboard.html';
     });
   </script>
 </body>
+</html>
 </html>

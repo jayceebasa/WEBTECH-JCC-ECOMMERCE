@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Admin Products - Management</title>
   <style>
     * {
@@ -862,6 +865,9 @@
   </style>
 </head>
 <body>
+  <!-- Load admin auth utility FIRST before any scripts use it -->
+  <script src="../assets/js/admin-auth.js"></script>
+
   <!-- Navbar -->
   <div class="navbar">
     <div class="navbar-brand">🏪 Admin Dashboard</div>
@@ -1228,7 +1234,6 @@
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', () => {
-      checkAuthentication();
       testBackendConnection().then(isConnected => {
         if (isConnected) {
           loadCategories();
@@ -1270,17 +1275,13 @@
     });
 
     // Check if user is authenticated
-    function checkAuthentication() {
-      const adminEmail = localStorage.getItem('adminEmail');
-      if (!adminEmail) {
-        window.location.href = 'admin_login.html';
-      }
-    }
 
     // Load categories
     async function loadCategories() {
       try {
-        const response = await fetch(`${API_BASE}/categories`);
+        const response = await fetch(`${API_BASE}/categories`, {
+          credentials: 'include'
+        });
         if (response.ok) {
           const data = await response.json();
           categories = data.data || data || [];
@@ -1375,7 +1376,9 @@
     // Load all products
     async function loadProducts() {
       try {
-        const response = await fetch(`${API_BASE}/products?limit=${itemsPerPage}&page=1&sort=${currentSort}`);
+        const response = await fetch(`${API_BASE}/products?limit=${itemsPerPage}&page=1&sort=${currentSort}`, {
+          credentials: 'include'
+        });
         if (response.ok) {
           const data = await response.json();
           currentPage = data.page || 1;
@@ -1431,7 +1434,9 @@
           url += `&published=${lastQueryParams.publishedFilter}`;
         }
 
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          credentials: 'include'
+        });
         if (response.ok) {
           const data = await response.json();
           currentPage = data.page || 1;
@@ -1619,7 +1624,8 @@
       try {
         const response = await fetch(`${API_BASE}/products`, {
           method: 'POST',
-          body: formDataToSend
+          body: formDataToSend,
+          credentials: 'include'
           // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
         });
 
@@ -1648,7 +1654,9 @@
       currentEditProductId = productId;
       try {
         console.log(`Fetching product: ${API_BASE}/products/${productId}`);
-        const response = await fetch(`${API_BASE}/products/${productId}`);
+        const response = await fetch(`${API_BASE}/products/${productId}`, {
+          credentials: 'include'
+        });
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -1793,7 +1801,8 @@
       try {
         const response = await fetch(`${API_BASE}/products/${currentEditProductId}`, {
           method: 'PUT',
-          body: formDataToSend
+          body: formDataToSend,
+          credentials: 'include'
           // Don't set Content-Type header - browser will set it with boundary for multipart/form-data
         });
 
@@ -1822,7 +1831,11 @@
 
       try {
         const response = await fetch(`${API_BASE}/products/${productId}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
         });
 
         if (response.ok) {
@@ -1859,9 +1872,7 @@
     // Handle logout
     function handleLogout() {
       if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('adminEmail');
-        localStorage.removeItem('adminToken');
-        window.location.href = 'admin_login.html';
+        adminAuth.logout(); // Call the logout method to clear cookie and redirect
       }
     }
 
@@ -1883,7 +1894,9 @@
     // Diagnostic function to check image data
     async function checkProductImage(productId) {
       try {
-        const response = await fetch(`${API_BASE}/products/${productId}`);
+        const response = await fetch(`${API_BASE}/products/${productId}`, {
+          credentials: 'include'
+        });
         const data = await response.json();
         const product = data.data || data;
         
@@ -1917,6 +1930,13 @@
       }
     }
 
+    // Handle logout
+    function handleLogout() {
+      if (confirm('Are you sure you want to logout?')) {
+        adminAuth.logout(); // Call the logout method to clear cookie and redirect
+      }
+    }
+
     // Preview image function
     function previewImage(event, previewElementId, hiddenInputId) {
       const file = event.target.files[0];
@@ -1936,6 +1956,45 @@
         return;
       }
     }
+
+    // Initialize admin page with authentication
+    async function initializeAdminPage() {
+      // Only run once
+      if (window.adminInitialized) return;
+      window.adminInitialized = true;
+
+      // Require authentication - redirects to login if not authenticated
+      const isAuthenticated = await adminAuth.requireAuth();
+      if (!isAuthenticated) {
+        return; // requireAuth handles redirect
+      }
+
+      // Start periodic token validation and pageshow listener
+      adminAuth.startTokenValidation();
+
+      // Display user email in navbar
+      const userEmail = adminAuth.getEmail();
+      if (userEmail) {
+        const adminNameElement = document.querySelector('.admin-name');
+        if (adminNameElement) {
+          adminNameElement.textContent = userEmail.split('@')[0];
+        }
+      }
+
+      // Load products
+      loadProducts();
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', initializeAdminPage);
+
+    // Prevent caching of admin pages
+    window.addEventListener('beforeunload', () => {
+      // This helps prevent going back to admin pages after logout
+      if (!sessionStorage.getItem('adminToken')) {
+        sessionStorage.clear();
+      }
+    });
   </script>
 </body>
 </html>

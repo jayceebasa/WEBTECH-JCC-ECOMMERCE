@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Admin Dashboard - Welcome</title>
   <style>
     * {
@@ -373,6 +376,9 @@
   </style>
 </head>
 <body>
+  <!-- Load admin auth utility FIRST before any scripts use it -->
+  <script src="../assets/js/admin-auth.js"></script>
+
   <!-- Navbar -->
   <div class="navbar">
     <div class="navbar-brand">🏪 Admin Dashboard</div>
@@ -523,7 +529,9 @@
     async function loadDashboardStats() {
       try {
         // Fetch products count from API
-        const productsRes = await fetch('http://localhost:5000/api/products?limit=1');
+        const productsRes = await fetch('http://127.0.0.1:5000/api/products?limit=1', {
+          credentials: 'include'
+        });
         if (productsRes.ok) {
           const productsData = await productsRes.json();
           // Access the total count from response
@@ -554,31 +562,85 @@
       // Add active class to clicked link
       event.target.classList.add('active');
       
-      // This would navigate to different admin pages
-      console.log('Navigating to:', section);
-      // In a real application, you would load different pages here
-      // window.location.href = `/pages/admin-${section}.html`;
+      // Navigate to admin products page
+      if (event.target.getAttribute('href')) {
+        window.location.href = event.target.getAttribute('href');
+      }
     }
 
     // Handle logout
     function handleLogout() {
       if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('adminEmail');
-        localStorage.removeItem('adminToken');
-        window.location.href = 'admin_login.html';
+        adminAuth.logout(); // Call the logout method to clear cookie and redirect
       }
     }
 
-    // Check if user is authenticated
-    function checkAuthentication() {
-      const adminEmail = localStorage.getItem('adminEmail');
-      if (!adminEmail) {
-        window.location.href = 'admin_login.html';
+    // Initialize admin page with authentication
+    async function initializeAdminPage() {
+      // Only run once
+      if (window.adminInitialized) return;
+      window.adminInitialized = true;
+
+      // Require authentication - redirects to login if not authenticated
+      const isAuthenticated = await adminAuth.requireAuth();
+      if (!isAuthenticated) {
+        return; // requireAuth handles redirect
+      }
+
+      // Start periodic token validation and pageshow listener
+      adminAuth.startTokenValidation();
+
+      // Display user email
+      const userEmail = adminAuth.getEmail();
+      if (userEmail) {
+        const adminNameElement = document.getElementById('adminName');
+        if (adminNameElement) {
+          adminNameElement.textContent = userEmail.split('@')[0];
+        }
+      }
+
+      // Load dashboard data
+      loadDashboardData();
+    }
+
+    // Load dashboard data
+    async function loadDashboardData() {
+      try {
+        // Example: Fetch admin stats
+        const response = await fetch('http://127.0.0.1:5000/api/products', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
+
+        if (response.status === 401) {
+          // Token expired, logout
+          adminAuth.clearAuth();
+          window.location.href = 'admin_login.html';
+          return;
+        }
+
+        // Dashboard data loaded
+        console.log('Dashboard data loaded');
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
       }
     }
 
-    // Check authentication on page load
-    checkAuthentication();
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', initializeAdminPage);
+
+    // Prevent caching of admin pages
+    window.addEventListener('beforeunload', () => {
+      // This helps prevent going back to admin pages after logout
+      if (!sessionStorage.getItem('adminToken')) {
+        sessionStorage.clear();
+      }
+    });
   </script>
 </body>
 </html>
+  <!-- Load admin auth utility -->
+  <script src="../assets/js/admin-auth.js"></script>
