@@ -21,21 +21,41 @@
 
     /* Navbar */
     .navbar {
-      background: white;
-      padding: 20px 40px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 15px 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 1000;
+    }
+
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .hamburger-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 28px;
+      cursor: pointer;
+      display: none;
+      transition: 0.3s;
+    }
+
+    .hamburger-btn:hover {
+      transform: scale(1.1);
     }
 
     .navbar-brand {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: bold;
-      color: #667eea;
+      color: white;
     }
 
     .navbar-right {
@@ -45,54 +65,100 @@
     }
 
     .logout-btn {
-      padding: 10px 20px;
-      background: #e74c3c;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.2);
       color: white;
-      border: none;
-      border-radius: 5px;
+      border: 2px solid white;
+      border-radius: 20px;
       cursor: pointer;
       transition: 0.3s;
+      font-weight: 600;
     }
 
     .logout-btn:hover {
-      background: #c0392b;
+      background: white;
+      color: #667eea;
     }
 
     /* Sidebar */
     .sidebar {
       position: fixed;
       left: 0;
-      top: 0;
+      top: 60px;
       width: 250px;
-      height: 100vh;
-      background: #2c3e50;
+      height: calc(100vh - 60px);
+      background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
       color: white;
-      padding: 20px;
+      padding: 20px 0;
       overflow-y: auto;
-      margin-top: 60px;
+      z-index: 999;
+      margin-top: 0;
+    }
+
+    .sidebar.active {
+      transform: translateX(0);
+    }
+
+    .sidebar-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sidebar-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .close-sidebar-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      display: none;
     }
 
     .sidebar a {
       display: flex;
       align-items: center;
       gap: 15px;
-      padding: 15px;
+      padding: 15px 20px;
       color: #ecf0f1;
       text-decoration: none;
-      border-radius: 5px;
-      margin-bottom: 5px;
       transition: 0.3s;
-      cursor: pointer;
+      border-left: 4px solid transparent;
     }
 
     .sidebar a:hover {
-      background: #34495e;
+      background: rgba(102, 126, 234, 0.2);
+      border-left-color: #667eea;
       color: #fff;
     }
 
     .sidebar a.active {
-      background: #667eea;
+      background: rgba(102, 126, 234, 0.3);
       color: white;
+      border-left-color: #667eea;
+    }
+
+    /* Sidebar overlay for mobile */
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 998;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
     }
 
     /* Main Content */
@@ -100,6 +166,7 @@
       margin-left: 250px;
       margin-top: 60px;
       padding: 40px;
+      transition: margin-left 0.3s ease;
     }
 
     .page-header {
@@ -828,19 +895,46 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-      .sidebar {
-        width: 80px;
-        padding: 10px;
+      .navbar {
+        padding: 12px 15px;
       }
 
-      .sidebar a {
-        padding: 10px;
-        justify-content: center;
-        gap: 0;
+      .hamburger-btn {
+        display: block;
+      }
+
+      .navbar-brand {
+        font-size: 18px;
+      }
+
+      .navbar-right {
+        gap: 10px;
+      }
+
+      .logout-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      .sidebar {
+        width: 100%;
+        max-width: 280px;
+        top: 0;
+        height: 100vh;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .close-sidebar-btn {
+        display: block;
       }
 
       .main-content {
-        margin-left: 80px;
+        margin-left: 0;
         padding: 20px;
       }
 
@@ -862,6 +956,43 @@
         padding: 10px;
       }
     }
+
+    @media (max-width: 480px) {
+      .navbar {
+        padding: 10px;
+      }
+
+      .navbar-brand {
+        font-size: 16px;
+      }
+
+      .logout-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        border-radius: 15px;
+      }
+
+      .main-content {
+        padding: 15px;
+        margin-top: 55px;
+      }
+
+      .page-header {
+        padding: 15px;
+      }
+
+      .page-header h1 {
+        font-size: 20px;
+      }
+
+      .modal-content {
+        padding: 20px;
+      }
+
+      .modal-header h2 {
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -870,14 +1001,24 @@
 
   <!-- Navbar -->
   <div class="navbar">
-    <div class="navbar-brand">🏪 Admin Dashboard</div>
+    <div class="navbar-left">
+      <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()">☰</button>
+      <div class="navbar-brand">🏪 Admin Dashboard</div>
+    </div>
     <div class="navbar-right">
       <button class="logout-btn" onclick="handleLogout()">Logout</button>
     </div>
   </div>
 
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
   <!-- Sidebar -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Menu</h3>
+      <button class="close-sidebar-btn" id="closeSidebarBtn" onclick="closeSidebar()">✕</button>
+    </div>
     <a href="admin_dashboard.html" onclick="navigateTo('dashboard')">📊 Dashboard</a>
     <a href="admin_products.html" class="active" onclick="navigateTo('products')">📦 Products</a>
     <a href="#orders" onclick="navigateTo('orders')">🛒 Orders</a>
@@ -1232,6 +1373,29 @@
     let lastQueryParams = {}; // Store last query for pagination
     let currentSort = 'newest'; // Track current sort
 
+    // Hamburger Menu Toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+    }
+
+    // Close sidebar when clicking on a link
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebarLinks = document.querySelectorAll('.sidebar a');
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', closeSidebar);
+      });
+    });
+
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', () => {
       testBackendConnection().then(isConnected => {
@@ -1273,8 +1437,6 @@
         }
       });
     });
-
-    // Check if user is authenticated
 
     // Load categories
     async function loadCategories() {
