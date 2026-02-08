@@ -23,15 +23,10 @@ function initializeApp() {
             }
         });
     }
-    
-    // Add any initial setup code here
-    setupEventListeners();
 }
 
-// Setup event listeners
-function setupEventListeners() {
-    // Add event listeners for interactive elements
-    console.log('Event listeners set up');
-}
-
-// Utility functions will be added here as the project grows
+// Note: Page-specific event listeners are set up in individual page files:
+// - shop.js: handles product filtering and loading
+// - single-product.js: handles product detail display
+// - admin-auth.js: handles authentication
+// - header.js: handles navigation and mobile menu

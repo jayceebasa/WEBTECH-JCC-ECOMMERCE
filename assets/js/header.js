@@ -29,9 +29,9 @@ class Header {
     }
 
     setActiveNavigation() {
-        // Get current page path
-        const currentPath = window.location.pathname;
-        const currentPage = currentPath.split('/').pop() || 'index.html';
+        // Get current page from document or URL
+        // Uses data-page attribute if available (more reliable than path parsing)
+        const currentPage = document.documentElement.dataset.page || this.getCurrentPage();
         
         // Get navigation links - updated for Bootstrap navbar structure
         const homeLink = document.querySelector('.navbar-nav a[href*="index.html"]');
@@ -49,18 +49,38 @@ class Header {
         });
         
         // Add active class based on current page
-        if (currentPage === 'index.html' || currentPage === '' || currentPath === '/' || currentPath.endsWith('/')) {
-            // Homepage - highlight Home
-            if (homeLink) homeLink.classList.add('active');
-        } else if (currentPage === 'shop.html') {
-            // Shop page - highlight Shop
-            if (shopLink) shopLink.classList.add('active');
-        } else if (currentPage === 'cart.html') {
-            // Cart page - highlight all cart icons (both desktop and mobile)
-            cartIcons.forEach(icon => {
-                icon.classList.add('active');
-            });
+        switch(currentPage) {
+            case 'home':
+            case 'index':
+                if (homeLink) homeLink.classList.add('active');
+                break;
+            case 'shop':
+                if (shopLink) shopLink.classList.add('active');
+                break;
+            case 'cart':
+                cartIcons.forEach(icon => {
+                    icon.classList.add('active');
+                });
+                break;
         }
+    }
+
+    /**
+     * Get current page name from URL path
+     * More reliable than string parsing
+     */
+    getCurrentPage() {
+        const currentPath = window.location.pathname;
+        const currentFile = currentPath.split('/').pop() || 'index.html';
+        
+        if (currentFile === '' || currentFile.includes('index.html')) {
+            return 'home';
+        } else if (currentFile.includes('shop.html')) {
+            return 'shop';
+        } else if (currentFile.includes('cart.html')) {
+            return 'cart';
+        }
+        return 'other';
     }
 }
 

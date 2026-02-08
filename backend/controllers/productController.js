@@ -6,7 +6,7 @@ const fs = require('fs');
 // Helper function to delete image file if not used by other products
 const deleteImageIfOrphaned = async (imagePath) => {
   if (!imagePath || imagePath.startsWith('http') || imagePath.startsWith('data:')) {
-    return; // Don't delete cloud URLs or base64
+    return true; // Don't delete cloud URLs or base64
   }
 
   try {
@@ -20,10 +20,13 @@ const deleteImageIfOrphaned = async (imagePath) => {
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
         console.log('🗑 Deleted orphaned image:', imagePath);
+        return true;
       }
     }
+    return true; // Image still in use or doesn't exist
   } catch (error) {
     console.error('Error checking/deleting orphaned image:', error.message);
+    return false; // Return false on error for debugging
   }
 };
 

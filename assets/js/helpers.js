@@ -39,36 +39,36 @@ const DOM = {
 };
 
 // Update cart badge counter from backend
+// NOTE: Cart API endpoint (/api/cart/count) not yet implemented
+// This function is disabled until backend cart endpoints are ready
 async function updateCartBadge() {
-    try {
-        const response = await fetch('/api/cart/count');
-        if (!response.ok) {
-            throw new Error('Failed to fetch cart count');
-        }
-
-        const data = await response.json();
-        const totalItems = data.count || 0;
-        
-        // Use a small delay to ensure badges exist in DOM
-        setTimeout(() => {
-            const badgeMobile = document.getElementById('cartCountBadgeMobile');
-            const badgeDesktop = document.getElementById('cartCountBadgeDesktop');
-            
-            if (badgeMobile) badgeMobile.textContent = totalItems;
-            if (badgeDesktop) badgeDesktop.textContent = totalItems;
-        }, 100);
-    } catch (error) {
-        console.error('Error updating cart badge:', error);
-    }
+    // TODO: Re-enable when backend cart endpoints are implemented
+    // try {
+    //     const response = await fetch('/api/cart/count');
+    //     if (!response.ok) {
+    //         throw new Error('Failed to fetch cart count');
+    //     }
+    //     const data = await response.json();
+    //     const totalItems = data.count || 0;
+    //     
+    //     setTimeout(() => {
+    //         const badgeMobile = document.getElementById('cartCountBadgeMobile');
+    //         const badgeDesktop = document.getElementById('cartCountBadgeDesktop');
+    //         if (badgeMobile) badgeMobile.textContent = totalItems;
+    //         if (badgeDesktop) badgeDesktop.textContent = totalItems;
+    //     }, 100);
+    // } catch (error) {
+    //     console.error('Error updating cart badge:', error);
+    // }
 }
 
-// Poll for cart updates from backend (every 30 seconds)
-setInterval(updateCartBadge, 30000);
+// Poll for cart updates - DISABLED until cart API is ready
+// setInterval(updateCartBadge, 30000);
 
-// Update badge on page load - with delay to ensure DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(updateCartBadge, 500);
-});
+// Update badge on page load - DISABLED
+// document.addEventListener('DOMContentLoaded', () => {
+//     setTimeout(updateCartBadge, 500);
+// });
 
 // Format currency
 const formatCurrency = (amount) => {
