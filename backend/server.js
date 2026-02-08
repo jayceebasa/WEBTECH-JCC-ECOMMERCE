@@ -80,7 +80,6 @@ app.use('/api/categories', categoryRoutes);
 // - Cart routes
 // - Order routes
 // - User routes
-// - Category routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -102,9 +101,9 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`
 ╔════════════════════════════════════════════╗
-║   WST JCC E-Commerce Backend Server       ║
-║   Running on http://localhost:${PORT}         ║
-║   Environment: ${process.env.NODE_ENV}               ║
+║   WST JCC E-Commerce Backend Server        ║
+║   Running on http://localhost:${PORT}      ║
+║   Environment: ${process.env.NODE_ENV}     ║
 ╚════════════════════════════════════════════╝
   `);
 });
