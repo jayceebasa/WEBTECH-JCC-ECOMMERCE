@@ -1,5 +1,20 @@
 // Utility functions for the WST JCC E-Commerce application
 
+// Get image path with fallback handling
+function getImagePath(product) {
+  if (!product || !product.image) {
+    return '../assets/images/placeholder.png';
+  }
+  
+  // Use as-is if it's a URL or base64
+  if (product.image.startsWith('http') || product.image.startsWith('data:')) {
+    return product.image;
+  }
+  
+  // Prepend ../ for local paths
+  return `../${product.image}`;
+}
+
 // DOM utility functions
 const DOM = {
     // Get element by ID

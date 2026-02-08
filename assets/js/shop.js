@@ -33,10 +33,7 @@ function displayProducts(products) {
 
   products.forEach(product => {
     const categoryId = typeof product.category === 'object' ? product.category._id : product.category;
-    // Handle image path - if it's a URL or base64, use as-is; otherwise prepend ../
-    const imagePath = (product.image && (product.image.startsWith('http') || product.image.startsWith('data:'))) 
-      ? product.image 
-      : (product.image ? `../${product.image}` : '../assets/images/placeholder.png');
+    const imagePath = getImagePath(product);
     
     const productHTML = `
       <div class="col-lg-4 col-md-6 col-sm-12 mb-4">

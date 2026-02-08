@@ -45,10 +45,7 @@ async function loadProductDetails() {
 function displayProductDetails(product) {
   // Update image
   const productImage = document.getElementById('productImage');
-  // Handle image path - if it's a URL or base64, use as-is; otherwise prepend ../
-  const imagePath = (product.image && (product.image.startsWith('http') || product.image.startsWith('data:'))) 
-    ? product.image 
-    : (product.image ? `../${product.image}` : '../assets/images/placeholder.png');
+  const imagePath = getImagePath(product);
   productImage.src = imagePath;
   productImage.alt = product.name;
   productImage.onerror = () => { productImage.src = '../assets/images/placeholder.png'; };
