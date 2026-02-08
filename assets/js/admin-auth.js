@@ -36,7 +36,6 @@ class AdminAuth {
    */
   async verifyToken() {
     try {
-      console.log('🔍 Frontend: Verifying token with backend...');
       const response = await fetch(`${this.API_BASE}/auth/verify`, {
         method: 'GET',
         headers: {
@@ -44,33 +43,23 @@ class AdminAuth {
         },
         credentials: 'include' // Include cookies
       });
-
-      console.log(`📊 Backend response status: ${response.status}`);
-      console.log(`📊 Response headers:`, response.headers);
       
       let data;
       try {
         const text = await response.text();
-        console.log(`📨 Raw response text: ${text}`);
         data = JSON.parse(text);
       } catch (parseError) {
-        console.error('❌ JSON parse error:', parseError);
-        console.error('❌ Response might be HTML or corrupted');
+        console.error('JSON parse error:', parseError);
         return { valid: false, message: 'Invalid response from server' };
       }
 
-      console.log('📨 Parsed backend response data:', data);
-
       if (!response.ok) {
-        console.log(`❌ Token verification failed: ${data.message}`);
         return { valid: false, message: data.message || 'Token verification failed' };
       }
 
-      console.log(`✅ Token verified successfully. User: ${data.user?.email}`);
       return { valid: true, user: data.user };
     } catch (error) {
-      console.error('❌ Token verification error:', error);
-      console.error('❌ Error stack:', error.stack);
+      console.error('Token verification error:', error);
       return { valid: false, message: 'Backend connection failed' };
     }
   }
@@ -80,12 +69,9 @@ class AdminAuth {
    * Returns user object with email from backend if authenticated
    */
   async requireAuth(redirectToLogin = true) {
-    console.log('🔐 requireAuth called');
-    
     // Prevent redirect loops - don't redirect if already on login page
     const currentPage = window.location.pathname;
     if (currentPage.includes('admin_login.html')) {
-      console.log('📄 Already on login page, returning false');
       return false;
     }
 
@@ -95,12 +81,9 @@ class AdminAuth {
       return true;
     }
 
-    console.log('📡 Calling verifyToken...');
     const result = await this.verifyToken();
-    console.log('📋 verifyToken result:', result);
 
     if (!result.valid) {
-      console.log('❌ Auth failed, redirecting to login');
       if (redirectToLogin) {
         // Clear auth and redirect once
         this.clearAuth();
@@ -108,12 +91,9 @@ class AdminAuth {
       }
       return false;
     }
-
-    console.log('✅ Auth successful');
     
     // Extract and store email from backend response (source of truth)
     if (result.user && result.user.email) {
-      console.log('📧 Storing email from backend:', result.user.email);
       this.setEmail(result.user.email);
     }
 

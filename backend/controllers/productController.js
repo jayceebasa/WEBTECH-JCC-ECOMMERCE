@@ -63,40 +63,21 @@ exports.getAllProducts = async (req, res) => {
       query.published = published === 'true';
     }
 
-    // Determine sort order
-    let sortOrder = { createdAt: -1 }; // Default: newest first
+    // Define sort options
+    const SORT_OPTIONS = {
+      'newest': { createdAt: -1 },
+      'oldest': { createdAt: 1 },
+      'name-asc': { name: 1 },
+      'name-desc': { name: -1 },
+      'price-asc': { price: 1 },
+      'price-desc': { price: -1 },
+      'stock-asc': { 'inventory.quantity': 1 },
+      'stock-desc': { 'inventory.quantity': -1 },
+      'featured': { featured: -1, createdAt: -1 }
+    };
 
-    switch (sort) {
-      case 'oldest':
-        sortOrder = { createdAt: 1 };
-        break;
-      case 'name-asc':
-        sortOrder = { name: 1 };
-        break;
-      case 'name-desc':
-        sortOrder = { name: -1 };
-        break;
-      case 'price-asc':
-        sortOrder = { price: 1 };
-        break;
-      case 'price-desc':
-        sortOrder = { price: -1 };
-        break;
-      case 'stock-asc':
-        sortOrder = { 'inventory.quantity': 1 };
-        break;
-      case 'stock-desc':
-        sortOrder = { 'inventory.quantity': -1 };
-        break;
-      case 'featured':
-        sortOrder = { featured: -1, createdAt: -1 };
-        break;
-      default:
-        sortOrder = { createdAt: -1 };
-    }
-
-    console.log('🔄 Sort parameter received:', sort);
-    console.log('📊 Applied sortOrder:', JSON.stringify(sortOrder));
+    // Get sort order from config, default to newest
+    const sortOrder = SORT_OPTIONS[sort] || SORT_OPTIONS['newest'];
 
     const skip = (page - 1) * limit;
     const products = await Product.find(query)
