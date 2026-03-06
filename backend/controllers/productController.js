@@ -379,12 +379,13 @@ exports.deleteProduct = async (req, res) => {
       });
     }
 
-    // Delete the product's image from Cloudinary if it's not used by other products
+    // Delete from DB first so the image orphan check counts correctly
+    await Product.findByIdAndDelete(id);
+
+    // Now delete the image from Cloudinary if no other product uses it
     if (product.image && product.image.includes('cloudinary')) {
       await deleteImageIfOrphaned(product.image);
     }
-
-    await Product.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,

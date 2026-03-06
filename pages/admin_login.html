@@ -134,13 +134,7 @@
     }
 
     #previewModeBtn {
-      background: none;
-      border: none;
-      color: #667eea;
-      cursor: pointer;
-      text-decoration: underline;
-      font-size: 12px;
-      padding: 0;
+      display: none;
     }
   </style>
 </head>
@@ -209,11 +203,6 @@
         submitBtn.disabled = false;
       }
     }
-
-    document.getElementById('previewModeBtn').addEventListener('click', () => {
-      localStorage.setItem('adminPreviewMode', 'true');
-      window.location.href = 'admin_dashboard.html';
-    });
   </script>
 </body>
 </html>

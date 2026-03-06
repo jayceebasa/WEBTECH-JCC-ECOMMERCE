@@ -4,7 +4,6 @@ const helmet = require('helmet');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const rateLimit = require('express-rate-limit');
 const path = require('path');
 const connectDB = require('./config/database');
 
@@ -13,15 +12,6 @@ const Category = require('./models/Category');
 const Product = require('./models/Product');
 
 const app = express();
-
-// Rate limiting for login endpoint - prevent brute force attacks
-const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Max 5 attempts per IP
-  message: 'Too many login attempts, please try again later',
-  standardHeaders: true, // Return rate limit info in RateLimit-* headers
-  legacyHeaders: false, // Disable X-RateLimit-* headers
-});
 
 // Security headers via Helmet (must come before other middleware)
 app.use(helmet({

@@ -7,7 +7,6 @@ class AdminAuth {
   constructor() {
     this.API_BASE = 'http://127.0.0.1:5000/api';
     this.userEmail = null; // Store in memory only, not localStorage
-    this.PREVIEW_MODE = localStorage.getItem('adminPreviewMode') === 'true';
   }
 
   /**
@@ -73,12 +72,6 @@ class AdminAuth {
     const currentPage = window.location.pathname;
     if (currentPage.includes('admin_login.html')) {
       return false;
-    }
-
-    // In preview mode, allow access without authentication
-    if (this.PREVIEW_MODE) {
-      console.warn('⚠️ Admin Preview Mode: Showing admin pages without authentication');
-      return true;
     }
 
     const result = await this.verifyToken();
