@@ -12,9 +12,12 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
     minlength: 6,
-    select: false // Don't return password by default
+    select: false // Not required — OAuth users have no password
+  },
+  googleId: {
+    type: String,
+    sparse: true // Unique when present, allows multiple null values
   },
   role: {
     type: String,

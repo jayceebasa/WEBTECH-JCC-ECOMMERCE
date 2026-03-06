@@ -20,13 +20,35 @@ html {
         align-items: center !important;
         margin-top: 0 !important;
     }
+
+    /* Make container-fluid the positioning reference for the absolute nav */
+    .navbar .container-fluid {
+        position: relative !important;
+    }
+
+    /* True page-center for the nav links — pulled out of flex flow */
+    .navbar-collapse {
+        position: absolute !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: auto !important;
+        flex-grow: 0 !important;
+    }
+
+    /* Keep brand on the left on desktop */
+    .navbar-brand {
+        margin: 0 !important;
+        margin-right: auto !important;
+    }
 }
 
 .navbar-brand {
     display: flex !important;
     align-items: center !important;
     padding: 0 !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
+    margin-left: 0 !important;
     flex-grow: 0 !important;
     flex-shrink: 0 !important;
     position: relative !important;
@@ -151,6 +173,26 @@ html {
 }
 
 .search-btn svg {
+    width: 25px !important;
+    height: 25px !important;
+}
+
+/* User profile button */
+.user-btn {
+    font: 600 14px "Poppins", sans-serif !important;
+    color: #1a093e !important;
+    transition: color 0.18s ease !important;
+    text-decoration: none !important;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+.user-btn:hover {
+    color: #c5b2eb !important;
+}
+
+.user-btn svg {
     width: 25px !important;
     height: 25px !important;
 }

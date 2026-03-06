@@ -166,3 +166,93 @@ exports.verifyToken = async (req, res) => {
     });
   }
 };
+
+/**
+ * User Protection Middleware
+ * Validates userToken cookie (issued after Google OAuth) for regular user routes.
+ * Uses the same JWT_SECRET as the admin protect middleware.
+ */
+exports.protectUser = async (req, res, next) => {
+  let token;
+
+  if (req.cookies && req.cookies.userToken) {
+    token = req.cookies.userToken;
+  } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: 'Not authorized to access this route'
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    console.log(`🔍 userToken verified for userId: ${decoded.userId}`);
+
+    const user = await User.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (decoded.tokenVersion !== user.tokenVersion) {
+      return res.status(401).json({
+        success: false,
+        message: 'Session invalidated. Please login again.'
+      });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ success: false, message: 'Token expired. Please login again.' });
+    }
+    console.error('❌ protectUser middleware error:', error.message);
+    return res.status(401).json({ success: false, message: 'Not authorized to access this route' });
+  }
+};
+
+/**
+ * Verify user token endpoint (for frontend to check if user session is active)
+ */
+exports.verifyUserToken = async (req, res) => {
+  let token;
+
+  if (req.cookies && req.cookies.userToken) {
+    token = req.cookies.userToken;
+  } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return res.status(401).json({ success: false, valid: false, message: 'No token provided' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.userId);
+
+    if (!user || decoded.tokenVersion !== user.tokenVersion) {
+      return res.status(401).json({ success: false, valid: false, message: 'Invalid or expired session' });
+    }
+
+    res.status(200).json({
+      success: true,
+      valid: true,
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    const msg = error.name === 'TokenExpiredError' ? 'Token expired. Please login again.' : 'Invalid token';
+    return res.status(401).json({ success: false, valid: false, message: msg });
+  }
+};

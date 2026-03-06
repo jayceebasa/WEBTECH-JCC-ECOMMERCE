@@ -1,7 +1,9 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key-change-in-production';
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_TIME = 15 * 60 * 1000; // 15 minutes
 
@@ -210,5 +212,138 @@ exports.updatePassword = async (req, res) => {
       message: 'Server error',
       error: error.message
     });
+  }
+};
+
+/**
+ * @desc    Google OAuth login for regular users
+ * @route   POST /api/auth/google
+ * @access  Public
+ */
+exports.googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google credential is required'
+      });
+    }
+
+    // Verify the Google ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, given_name: firstName, family_name: lastName, picture } = payload;
+
+    // Find existing user by googleId or email
+    let user = await User.findOne({ $or: [{ googleId }, { email }] });
+
+    if (user) {
+      // Link googleId if the account was found by email but has no googleId yet
+      if (!user.googleId) {
+        user.googleId = googleId;
+        await user.save();
+      }
+    } else {
+      // Create a new user (role defaults to 'user', no password needed)
+      user = await User.create({
+        googleId,
+        email,
+        firstName: firstName || '',
+        lastName: lastName || '',
+        role: 'user'
+      });
+    }
+
+    console.log(`✅ Google OAuth login for ${user.email} (role: ${user.role})`);
+
+    // Issue JWT using the same secret and format as admin tokens
+    const token = jwt.sign(
+      { userId: user._id, tokenVersion: user.tokenVersion },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // Set httpOnly cookie named 'userToken' (separate from admin's 'adminToken')
+    res.cookie('userToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token, // returned so frontend can store it for cross-origin dev environments
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        picture: picture || null
+      }
+    });
+  } catch (error) {
+    console.error('❌ Google OAuth error:', error.message);
+    res.status(401).json({
+      success: false,
+      message: 'Invalid or expired Google credential'
+    });
+  }
+};
+
+/**
+ * @desc    Logout regular user (clears userToken cookie)
+ * @route   POST /api/auth/user/logout
+ * @access  Public
+ */
+exports.userLogout = (req, res) => {
+  res.cookie('userToken', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 0
+  });
+
+  console.log('✅ User logout successful, cookie cleared');
+
+  res.status(200).json({
+    success: true,
+    message: 'Logged out successfully'
+  });
+};
+
+/**
+ * @desc    Get current logged-in user (for userToken)
+ * @route   GET /api/auth/user/me
+ * @access  Private (user)
+ */
+exports.getUserMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 };

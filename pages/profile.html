@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile - WST JCC E-Commerce</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Customization -->
+    <link rel="stylesheet" href="../assets/css/bootstrap/overrides.css" />
+    <link rel="stylesheet" href="../assets/css/bootstrap/header.css" />
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../assets/css/custom/main.css" />
+    <link rel="stylesheet" href="../assets/css/custom/footer.css" />
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Poppins:wght@400;500;600&display=swap');
+
+      .profile-page {
+        background-color: #ffffff;
+        min-height: 100vh;
+        padding: 0 20px 60px;
+      }
+
+      /* Page title row — matches shop.html / singleProduct.html pattern */
+      .profile-header {
+        padding: 40px 20px 24px;
+        text-align: center;
+      }
+
+      .profile-header h1 {
+        font-family: 'Lora', serif;
+        font-size: 2.2rem;
+        font-weight: 400;
+        color: #2e2545;
+        letter-spacing: 0.05em;
+        margin: 0 0 20px;
+      }
+
+      .profile-divider {
+        width: 100%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #d0d0d0, transparent);
+      }
+
+      /* Avatar + name card */
+      .profile-card {
+        max-width: 520px;
+        margin: 40px auto 0;
+        background: #ffffff;
+        border: 1.5px solid #e8e3f0;
+        border-radius: 12px;
+        padding: 40px 36px;
+        text-align: center;
+      }
+
+      .profile-avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #a88ec3 0%, #2e2545 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        overflow: hidden;
+      }
+
+      .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+      }
+
+      .profile-avatar svg {
+        color: #ffffff;
+      }
+
+      .profile-name {
+        font-family: 'Lora', serif;
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: #2e2545;
+        margin-bottom: 4px;
+      }
+
+      .profile-email {
+        font-family: 'Poppins', sans-serif;
+        font-size: 13px;
+        color: #888;
+        margin-bottom: 8px;
+      }
+
+      .profile-role-badge {
+        display: inline-block;
+        font-family: 'Poppins', sans-serif;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #a88ec3;
+        background: #f5f0fb;
+        border: 1px solid #d4c5e8;
+        border-radius: 20px;
+        padding: 3px 14px;
+        margin-bottom: 32px;
+      }
+
+      /* Info rows */
+      .profile-info {
+        text-align: left;
+        border-top: 1px solid #f0eaf7;
+        padding-top: 24px;
+      }
+
+      .profile-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f5f2f9;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+      }
+
+      .profile-info-row:last-child {
+        border-bottom: none;
+      }
+
+      .info-label {
+        color: #888;
+        font-size: 13px;
+      }
+
+      .info-value {
+        color: #2e2545;
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      /* Sign out button */
+      .sign-out-btn {
+        margin-top: 28px;
+        width: 100%;
+        padding: 11px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: #c0392b;
+        background: #fff;
+        border: 1.5px solid #e8b4b0;
+        border-radius: 7px;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+      }
+
+      .sign-out-btn:hover {
+        background: #fdf3f2;
+        border-color: #c0392b;
+      }
+
+      /* Not-logged-in state */
+      .profile-guest {
+        max-width: 420px;
+        margin: 60px auto;
+        text-align: center;
+      }
+
+      .profile-guest p {
+        font-family: 'Poppins', sans-serif;
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 15px;
+      }
+
+      .login-link-btn {
+        display: inline-block;
+        padding: 11px 32px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: #ffffff;
+        background: linear-gradient(135deg, #a88ec3 0%, #2e2545 100%);
+        border: none;
+        border-radius: 7px;
+        text-decoration: none;
+        transition: opacity 0.2s;
+      }
+
+      .login-link-btn:hover {
+        opacity: 0.88;
+        color: #ffffff;
+      }
+
+      /* Loading skeleton */
+      .skeleton {
+        background: linear-gradient(90deg, #f0eaf7 25%, #e8e0f0 50%, #f0eaf7 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+        border-radius: 6px;
+      }
+
+      @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <header></header>
+
+    <main>
+      <div class="profile-page">
+        <!-- Page Title -->
+        <div class="profile-header">
+          <h1>My Profile</h1>
+          <div class="profile-divider"></div>
+        </div>
+
+        <!-- Content injected by JS -->
+        <div id="profileContent"></div>
+      </div>
+    </main>
+
+    <footer></footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/helpers.js"></script>
+    <script src="../assets/js/user-auth.js"></script>
+    <script src="../assets/js/header.js"></script>
+    <script src="../assets/js/partials-loader.js"></script>
+    <script src="../assets/js/main.js"></script>
+
+    <script>
+      async function loadProfile() {
+        const container = document.getElementById('profileContent');
+
+        const user = await userAuth.getMe();
+
+        if (!user) {
+          container.innerHTML = `
+            <div class="profile-guest">
+              <p>You're not logged in. Sign in to view your profile.</p>
+              <a href="login.html" class="login-link-btn">Sign In with Google</a>
+            </div>`;
+          return;
+        }
+
+        const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email.split('@')[0];
+        const initials = (user.firstName?.[0] || '') + (user.lastName?.[0] || '');
+        const memberSince = new Date(user.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+
+        container.innerHTML = `
+          <div class="profile-card">
+            <div class="profile-avatar" id="avatarEl">
+              <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="8" r="4"/>
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
+            </div>
+
+            <div class="profile-name">${displayName}</div>
+            <div class="profile-email">${user.email}</div>
+            <span class="profile-role-badge">${user.role}</span>
+
+            <div class="profile-info">
+              <div class="profile-info-row">
+                <span class="info-label">First Name</span>
+                <span class="info-value">${user.firstName || '—'}</span>
+              </div>
+              <div class="profile-info-row">
+                <span class="info-label">Last Name</span>
+                <span class="info-value">${user.lastName || '—'}</span>
+              </div>
+              <div class="profile-info-row">
+                <span class="info-label">Email</span>
+                <span class="info-value">${user.email}</span>
+              </div>
+              <div class="profile-info-row">
+                <span class="info-label">Member Since</span>
+                <span class="info-value">${memberSince}</span>
+              </div>
+            </div>
+
+            <button class="sign-out-btn" onclick="handleSignOut()">Sign Out</button>
+          </div>`;
+      }
+
+      async function handleSignOut() {
+        await userAuth.logout();
+        window.location.href = 'login.html';
+      }
+
+      loadProfile();
+    </script>
+  </body>
+</html>

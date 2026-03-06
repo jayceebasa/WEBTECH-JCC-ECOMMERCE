@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - WST JCC E-Commerce</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .login-container {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .login-header {
+      margin-bottom: 30px;
+    }
+
+    .login-header h1 {
+      color: #333;
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .login-header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+      color: #aaa;
+      font-size: 13px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    .google-btn-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 8px 0;
+    }
+
+    .error-message {
+      background: #fadbd8;
+      color: #c0392b;
+      padding: 12px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .success-message {
+      background: #d5f5e3;
+      color: #1e8449;
+      padding: 12px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      color: #667eea;
+      margin: 16px 0;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .back-link {
+      margin-top: 24px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .back-link a {
+      color: #667eea;
+      text-decoration: none;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+
+    .privacy-note {
+      margin-top: 20px;
+      font-size: 11px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <h1>Welcome</h1>
+      <p>Sign in to your account to continue shopping</p>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+    <div class="success-message" id="successMessage"></div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Signing you in...</p>
+    </div>
+
+    <!-- Google Sign-In Button rendered here by Google Identity Services -->
+    <div class="google-btn-wrapper">
+      <div id="g_id_onload"
+           data-client_id="322891730523-5psbc351i2a1q1l21j3up9n07cqo0kem.apps.googleusercontent.com"
+           data-callback="handleGoogleCredential"
+           data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="large"
+           data-theme="outline"
+           data-text="sign_in_with"
+           data-shape="rectangular"
+           data-logo_alignment="left">
+      </div>
+    </div>
+
+    <div class="back-link">
+      <a href="../index.html">&larr; Back to Shop</a>
+    </div>
+
+    <p class="privacy-note">
+      By signing in, you agree to our Terms of Service and Privacy Policy.
+    </p>
+  </div>
+
+  <!-- Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="../assets/js/user-auth.js"></script>
+  <script>
+    const API_BASE = 'http://localhost:5000/api';
+
+    async function handleGoogleCredential(response) {
+      const loading = document.getElementById('loading');
+      loading.style.display = 'block';
+      hideError();
+
+      try {
+        const result = await userAuth.googleLogin(response.credential);
+
+        if (result.success) {
+          showSuccess('Logged in as ' + (result.user.firstName || result.user.email) + '! Redirecting...');
+          setTimeout(() => {
+            const redirect = new URLSearchParams(window.location.search).get('redirect') || 'shop.html';
+            window.location.href = redirect;
+          }, 1000);
+        } else {
+          showError(result.message || 'Login failed. Please try again.');
+        }
+      } catch (err) {
+        console.error('Google login error:', err);
+        if (err.message && err.message.includes('Failed to fetch')) {
+          showError('Cannot reach the server. Make sure the backend is running on port 5000.');
+        } else {
+          showError('An error occurred: ' + err.message);
+        }
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorMessage');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function hideError() {
+      document.getElementById('errorMessage').style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+      const el = document.getElementById('successMessage');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    // Check if already logged in — redirect away if so
+    userAuth.verifySession().then(valid => {
+      if (valid) window.location.href = 'shop.html';
+    });
+  </script>
+</body>
+</html>

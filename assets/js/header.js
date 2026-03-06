@@ -82,6 +82,62 @@ class Header {
         }
         return 'other';
     }
+
+    /**
+     * Render the login / user-account button in the header.
+     * Checks the active user session and updates the #headerUserBtn element.
+     */
+    async renderUserButton() {
+        const container = document.getElementById('headerUserBtn');
+        if (!container || typeof userAuth === 'undefined') return;
+
+        const render = (user) => {
+            if (user) {
+                const displayName = user.firstName || user.email.split('@')[0];
+                const profileHref = window.location.pathname.includes('/pages/') ? 'profile.html' : 'pages/profile.html';
+                container.innerHTML = `
+                <div class="dropdown">
+                    <button class="user-btn d-flex align-items-center gap-2 dropdown-toggle"
+                            type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                        </svg>
+                        <span>${displayName}</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><span class="dropdown-item-text text-muted" style="font-size:12px;">${user.email}</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="${profileHref}">My Profile</a></li>
+                        <li><button class="dropdown-item" onclick="headerLogout()">Sign Out</button></li>
+                    </ul>
+                </div>`;
+            } else {
+                const loginHref = window.location.pathname.includes('/pages/') ? 'login.html' : 'pages/login.html';
+                container.innerHTML = `
+                <a href="${loginHref}" class="user-btn d-flex align-items-center gap-2">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                    </svg>
+                    <span>Login</span>
+                </a>`;
+            }
+        };
+
+        // Render synchronously from cache — zero delay, no flicker
+        render(userAuth._getCachedUser());
+
+        // Background refresh: only re-render if something changed (e.g. token expired)
+        userAuth.getMe(render);
+    }
+}
+
+async function headerLogout() {
+    if (typeof userAuth !== 'undefined') {
+        await userAuth.logout();
+    }
+    window.location.reload();
 }
 
 // Expose Header class globally for partials-loader
