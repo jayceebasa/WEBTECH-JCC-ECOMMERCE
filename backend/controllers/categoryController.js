@@ -17,8 +17,7 @@ exports.getAllCategories = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error fetching categories',
-      error: error.message
+      message: 'Error fetching categories'
     });
   }
 };
@@ -46,8 +45,7 @@ exports.getCategoryById = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error fetching category',
-      error: error.message
+      message: 'Error fetching category'
     });
   }
 };
@@ -97,8 +95,7 @@ exports.createCategory = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error creating category',
-      error: error.message
+      message: 'Error creating category'
     });
   }
 };
@@ -136,8 +133,7 @@ exports.updateCategory = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error updating category',
-      error: error.message
+      message: 'Error updating category'
     });
   }
 };
@@ -166,8 +162,7 @@ exports.deleteCategory = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error deleting category',
-      error: error.message
+      message: 'Error deleting category'
     });
   }
 };

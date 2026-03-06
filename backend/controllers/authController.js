@@ -110,8 +110,7 @@ exports.login = async (req, res) => {
     console.error('❌ Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error during login',
-      error: error.message
+      message: 'Server error during login'
     });
   }
 };
@@ -145,8 +144,7 @@ exports.getMe = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: 'Server error'
     });
   }
 };
@@ -209,8 +207,7 @@ exports.updatePassword = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: 'Server error'
     });
   }
 };
@@ -344,6 +341,6 @@ exports.getUserMe = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

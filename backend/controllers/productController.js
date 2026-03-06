@@ -2,6 +2,9 @@ const Product = require('../models/Product');
 const Category = require('../models/Category');
 const { cloudinary, uploadToCloudinary } = require('../middleware/uploadMiddleware');
 
+// Escape special regex characters to prevent ReDoS
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // Helper function to delete image from Cloudinary if not used by other products
 const deleteImageIfOrphaned = async (imageUrl) => {
   if (!imageUrl || !imageUrl.includes('cloudinary')) {
@@ -42,13 +45,17 @@ const deleteImageIfOrphaned = async (imageUrl) => {
  */
 exports.getAllProducts = async (req, res) => {
   try {
-    const { q, category, featured, inStock, published, limit = 10, page = 1, sort = 'newest' } = req.query;
-    
+    const { q, category, featured, inStock, published, sort = 'newest' } = req.query;
+
+    // Cap limit and page to prevent database dump
+    const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+
     let query = {};
 
-    // Search by name if search query provided
+    // Search by name — escape user input to prevent ReDoS
     if (q) {
-      query.name = { $regex: q, $options: 'i' }; // Case-insensitive search
+      query.name = { $regex: escapeRegex(q), $options: 'i' };
     }
 
     // Filter by category if provided
@@ -66,9 +73,13 @@ exports.getAllProducts = async (req, res) => {
       query['inventory.inStock'] = inStock === 'true';
     }
 
-    // Filter by published status if provided
-    if (published !== undefined) {
+    // Only admins (requests with a valid cookie) may see unpublished products.
+    // Public requests always get published=true only.
+    const isAdmin = req.cookies && req.cookies.adminToken;
+    if (published !== undefined && isAdmin) {
       query.published = published === 'true';
+    } else {
+      query.published = true;
     }
 
     // Define sort options
@@ -107,8 +118,7 @@ exports.getAllProducts = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error fetching products',
-      error: error.message
+      message: 'Error fetching products'
     });
   }
 };
@@ -137,8 +147,7 @@ exports.getProductById = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error fetching product',
-      error: error.message
+      message: 'Error fetching product'
     });
   }
 };
@@ -151,8 +160,6 @@ exports.getProductById = async (req, res) => {
 exports.createProduct = async (req, res) => {
   try {
     console.log('=== CREATE PRODUCT REQUEST ===');
-    console.log('File:', req.file);
-    console.log('Body keys:', Object.keys(req.body));
 
     const {
       name,
@@ -164,8 +171,6 @@ exports.createProduct = async (req, res) => {
       featured,
       published
     } = req.body;
-
-    console.log('Extracted fields:', { name, price, category, sizes: sizes?.substring(0, 50) });
 
     // Parse JSON strings from FormData
     let details = {};
@@ -197,7 +202,7 @@ exports.createProduct = async (req, res) => {
       }
     }
 
-    console.log('Parsed data:', { sizeArray, details, inventory });
+    console.log('Parsed data:', { sizeArray });
 
     // Validate required fields
     if (!name || !price || !category) {
@@ -224,13 +229,10 @@ exports.createProduct = async (req, res) => {
       // Upload buffer to Cloudinary and get the secure URL
       const result = await uploadToCloudinary(req.file.buffer);
       imagePath = result.secure_url;
-      console.log('File uploaded to Cloudinary, image path:', imagePath);
     } else if (req.body.image) {
       // Fallback to base64 if provided (for backward compatibility)
       imagePath = req.body.image;
-      console.log('Using base64 image');
     } else {
-      console.log('No image provided');
     }
 
     // Create product
@@ -262,8 +264,7 @@ exports.createProduct = async (req, res) => {
     console.error('✗ Error creating product:', error);
     res.status(500).json({
       success: false,
-      message: 'Error creating product',
-      error: error.message
+      message: 'Error creating product'
     });
   }
 };
@@ -356,8 +357,7 @@ exports.updateProduct = async (req, res) => {
     console.error('Error updating product:', error);
     res.status(500).json({
       success: false,
-      message: 'Error updating product',
-      error: error.message
+      message: 'Error updating product'
     });
   }
 };
@@ -396,8 +396,7 @@ exports.deleteProduct = async (req, res) => {
     console.error('Error deleting product:', error);
     res.status(500).json({
       success: false,
-      message: 'Error deleting product',
-      error: error.message
+      message: 'Error deleting product'
     });
   }
 };
@@ -424,8 +423,7 @@ exports.getFeaturedProducts = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error fetching featured products',
-      error: error.message
+      message: 'Error fetching featured products'
     });
   }
 };
@@ -479,8 +477,7 @@ exports.searchProducts = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error searching products',
-      error: error.message
+      message: 'Error searching products'
     });
   }
 };
@@ -525,8 +522,7 @@ exports.getProductsByCategory = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error fetching products by category',
-      error: error.message
+      message: 'Error fetching products by category'
     });
   }
 };
@@ -572,8 +568,7 @@ exports.updateInventory = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Error updating inventory',
-      error: error.message
+      message: 'Error updating inventory'
     });
   }
 };
