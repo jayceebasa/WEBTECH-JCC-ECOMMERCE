@@ -3,6 +3,7 @@ const router = express.Router();
 const productController = require('../controllers/productController');
 const upload = require('../middleware/uploadMiddleware');
 const { protect } = require('../middleware/authMiddleware');
+const { validate, productRules, inventoryRules } = require('../middleware/validateMiddleware');
 
 // Public routes
 /**
@@ -40,12 +41,12 @@ router.get('/:id', productController.getProductById);
 /**
  * Create new product with image upload
  */
-router.post('/', protect, upload.single('imageFile'), productController.createProduct);
+router.post('/', protect, upload.single('imageFile'), productRules, validate, productController.createProduct);
 
 /**
  * Update product with optional image upload
  */
-router.put('/:id', protect, upload.single('imageFile'), productController.updateProduct);
+router.put('/:id', protect, upload.single('imageFile'), productRules, validate, productController.updateProduct);
 
 /**
  * Delete product
@@ -55,6 +56,6 @@ router.delete('/:id', protect, productController.deleteProduct);
 /**
  * Update product inventory
  */
-router.put('/:id/inventory', protect, productController.updateInventory);
+router.put('/:id/inventory', protect, inventoryRules, validate, productController.updateInventory);
 
 module.exports = router;

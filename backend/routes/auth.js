@@ -3,6 +3,7 @@ const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const authController = require('../controllers/authController');
 const { protect, verifyToken, protectUser, verifyUserToken } = require('../middleware/authMiddleware');
+const { validate, loginRules, googleLoginRules, updatePasswordRules } = require('../middleware/validateMiddleware');
 
 // Rate limiting for login endpoint
 const loginLimiter = rateLimit({
@@ -14,18 +15,18 @@ const loginLimiter = rateLimit({
 });
 
 // --- Admin routes ---
-router.post('/login', loginLimiter, authController.login);
+router.post('/login', loginLimiter, loginRules, validate, authController.login);
 router.post('/logout', authController.logout);
 router.get('/verify', verifyToken);
 router.get('/me', protect, authController.getMe);
-router.put('/update-password', protect, authController.updatePassword);
+router.put('/update-password', protect, updatePasswordRules, validate, authController.updatePassword);
 
 // --- User (Google OAuth) routes ---
 router.get('/google/config', (req, res) => {
   // The Google Client ID is not secret — it's safe to expose to the frontend.
   res.json({ clientId: process.env.GOOGLE_CLIENT_ID || '' });
 });
-router.post('/google', authController.googleLogin);
+router.post('/google', googleLoginRules, validate, authController.googleLogin);
 router.post('/user/logout', authController.userLogout);
 router.get('/user/verify', verifyUserToken);
 router.get('/user/me', protectUser, authController.getUserMe);

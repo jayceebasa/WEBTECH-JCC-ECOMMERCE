@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
 const { protect } = require('../middleware/authMiddleware');
+const { validate, categoryRules } = require('../middleware/validateMiddleware');
 
 // Public routes
 /**
@@ -18,12 +19,12 @@ router.get('/:id', categoryController.getCategoryById);
 /**
  * Create new category
  */
-router.post('/', protect, categoryController.createCategory);
+router.post('/', protect, categoryRules, validate, categoryController.createCategory);
 
 /**
  * Update category
  */
-router.put('/:id', protect, categoryController.updateCategory);
+router.put('/:id', protect, categoryRules, validate, categoryController.updateCategory);
 
 /**
  * Delete category

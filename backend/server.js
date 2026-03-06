@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -21,6 +22,13 @@ const loginLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in RateLimit-* headers
   legacyHeaders: false, // Disable X-RateLimit-* headers
 });
+
+// Security headers via Helmet (must come before other middleware)
+app.use(helmet({
+  // Allow external scripts (Google Fonts, Bootstrap CDN, GIS) needed by frontend
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
 
 // Middleware
 app.use(cors({
@@ -81,11 +89,50 @@ app.use('/api/categories', categoryRoutes);
 // - Order routes
 // - User routes
 
-// Error handling middleware
+// Centralized error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
-  res.status(500).json({ 
-    error: err.message || 'Internal Server Error'
+
+  // Multer file size exceeded
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ success: false, message: 'File too large. Maximum size is 5MB.' });
+  }
+
+  // Multer unexpected field or file type rejection
+  if (err.code === 'LIMIT_UNEXPECTED_FILE' || (err.message && err.message.includes('Only image files'))) {
+    return res.status(400).json({ success: false, message: err.message || 'Unexpected file upload.' });
+  }
+
+  // Mongoose validation errors
+  if (err.name === 'ValidationError') {
+    const messages = Object.values(err.errors).map(e => e.message);
+    return res.status(400).json({ success: false, message: 'Validation failed', errors: messages });
+  }
+
+  // Mongoose duplicate key (e.g. unique email)
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue || {})[0] || 'field';
+    return res.status(409).json({ success: false, message: `${field} already exists.` });
+  }
+
+  // Mongoose bad ObjectId
+  if (err.name === 'CastError') {
+    return res.status(400).json({ success: false, message: `Invalid ${err.path}: ${err.value}` });
+  }
+
+  // JWT errors
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({ success: false, message: 'Invalid token.' });
+  }
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({ success: false, message: 'Token expired. Please login again.' });
+  }
+
+  // Default 500
+  const statusCode = err.statusCode || err.status || 500;
+  res.status(statusCode).json({
+    success: false,
+    message: err.message || 'Internal Server Error',
   });
 });
 
