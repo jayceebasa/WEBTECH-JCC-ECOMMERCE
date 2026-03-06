@@ -1,32 +1,37 @@
 const Product = require('../models/Product');
 const Category = require('../models/Category');
-const path = require('path');
-const fs = require('fs');
+const { cloudinary, uploadToCloudinary } = require('../middleware/uploadMiddleware');
 
-// Helper function to delete image file if not used by other products
-const deleteImageIfOrphaned = async (imagePath) => {
-  if (!imagePath || imagePath.startsWith('http') || imagePath.startsWith('data:')) {
-    return true; // Don't delete cloud URLs or base64
+// Helper function to delete image from Cloudinary if not used by other products
+const deleteImageIfOrphaned = async (imageUrl) => {
+  if (!imageUrl || !imageUrl.includes('cloudinary')) {
+    return true; // Only delete Cloudinary URLs
   }
 
   try {
     // Check if any other product uses this image
-    const count = await Product.countDocuments({ image: imagePath });
+    const count = await Product.countDocuments({ image: imageUrl });
     
     if (count === 0) {
       // No other product uses this image, safe to delete
-      const filePath = path.join(__dirname, '..', '..', imagePath.replace(/^\//, ''));
-      
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-        console.log('🗑 Deleted orphaned image:', imagePath);
+      try {
+        // Extract public ID from Cloudinary URL
+        const urlParts = imageUrl.split('/');
+        const filename = urlParts[urlParts.length - 1];
+        const publicId = 'wst-jcc-ecommerce/products/' + filename.split('.')[0];
+        
+        await cloudinary.uploader.destroy(publicId);
+        console.log('🗑 Deleted orphaned image from Cloudinary:', publicId);
         return true;
+      } catch (deleteError) {
+        console.error('Error deleting from Cloudinary:', deleteError.message);
+        return false;
       }
     }
-    return true; // Image still in use or doesn't exist
+    return true; // Image still in use
   } catch (error) {
     console.error('Error checking/deleting orphaned image:', error.message);
-    return false; // Return false on error for debugging
+    return false;
   }
 };
 
@@ -213,12 +218,13 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    // Handle image - either from file upload or base64
+    // Handle image - either from Cloudinary file upload or base64
     let imagePath = '';
     if (req.file) {
-      // If file was uploaded, construct the relative path
-      imagePath = `/assets/images/products/${req.file.filename}`;
-      console.log('File uploaded, image path:', imagePath);
+      // Upload buffer to Cloudinary and get the secure URL
+      const result = await uploadToCloudinary(req.file.buffer);
+      imagePath = result.secure_url;
+      console.log('File uploaded to Cloudinary, image path:', imagePath);
     } else if (req.body.image) {
       // Fallback to base64 if provided (for backward compatibility)
       imagePath = req.body.image;
@@ -321,11 +327,12 @@ exports.updateProduct = async (req, res) => {
 
     // Handle image - if new file uploaded, use that path
     if (req.file) {
-      // Delete old image if it's being replaced
-      if (product.image && product.image.startsWith('/assets/images/products/')) {
+      // Delete old image if it's being replaced and it's from Cloudinary
+      if (product.image && product.image.includes('cloudinary')) {
         await deleteImageIfOrphaned(product.image);
       }
-      updates.image = `/assets/images/products/${req.file.filename}`;
+      const result = await uploadToCloudinary(req.file.buffer);
+      updates.image = result.secure_url;
     } else if (updates.image && updates.image.startsWith('data:')) {
       // If base64 is provided (backward compatibility), keep it as is
     } else if (!req.file && !updates.image) {
@@ -372,8 +379,8 @@ exports.deleteProduct = async (req, res) => {
       });
     }
 
-    // Delete the product's image if it's not used by other products
-    if (product.image && product.image.startsWith('/assets/images/products/')) {
+    // Delete the product's image from Cloudinary if it's not used by other products
+    if (product.image && product.image.includes('cloudinary')) {
       await deleteImageIfOrphaned(product.image);
     }
 
