@@ -1,6 +1,5 @@
 {
   "buildCommand": "npm install --legacy-peer-deps",
-  "outputDirectory": ".",
   "functions": {
     "api/index.js": {
       "maxDuration": 30
