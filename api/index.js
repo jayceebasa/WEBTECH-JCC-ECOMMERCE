@@ -5,11 +5,11 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-const connectDB = require('./config/database');
+const connectDB = require('../lib/config/database');
 
 // Register models
-const Category = require('./models/Category');
-const Product = require('./models/Product');
+const Category = require('../lib/models/Category');
+const Product = require('../lib/models/Product');
 
 const app = express();
 
@@ -92,9 +92,9 @@ app.get('/api/test/connection', (req, res) => {
 });
 
 // API Routes
-const authRoutes = require('./routes/auth');
-const productRoutes = require('./routes/products');
-const categoryRoutes = require('./routes/categories');
+const authRoutes = require('../lib/routes/auth');
+const productRoutes = require('../lib/routes/products');
+const categoryRoutes = require('../lib/routes/categories');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
