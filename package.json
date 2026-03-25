@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "npm install --legacy-peer-deps",
+    "build": "npm install --legacy-peer-deps && mkdir -p public && cp index.html public/ && cp -r pages public/ && cp -r assets public/ && cp -r partials public/",
     "test": "echo 'No tests specified yet'",
     "seed": "node backend/seed.js"
   },
