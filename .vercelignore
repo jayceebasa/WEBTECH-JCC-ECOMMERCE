@@ -1,6 +1,7 @@
-# Backend folder is now migrated to /api, exclude old backend
+# Exclude all backend folders (migrated to /lib and /api)
 backend/
 backend_old/
+backend_backup/
 
 # Git and version control
 .git
