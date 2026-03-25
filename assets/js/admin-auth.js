@@ -5,7 +5,7 @@
 
 class AdminAuth {
   constructor() {
-    this.API_BASE = 'http://127.0.0.1:5000/api';
+    this.API_BASE = '/api';
     this.userEmail = null; // Store in memory only, not localStorage
   }
 
