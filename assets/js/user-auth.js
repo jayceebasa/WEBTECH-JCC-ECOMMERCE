@@ -5,7 +5,7 @@
  * The httpOnly cookie is still set by the backend as a security layer in production.
  */
 
-const USER_API = '/api/auth';
+const USER_API = `${API_BASE}/auth`;
 const TOKEN_KEY = 'userToken';
 const USER_CACHE_KEY = 'userCache';
 

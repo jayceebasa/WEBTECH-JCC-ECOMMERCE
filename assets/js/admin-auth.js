@@ -5,7 +5,7 @@
 
 class AdminAuth {
   constructor() {
-    this.API_BASE = '/api';
+    this.API_BASE = API_BASE;
     this.userEmail = null; // Store in memory only, not localStorage
   }
 

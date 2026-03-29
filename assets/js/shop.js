@@ -4,7 +4,7 @@ let allProducts = [];
 // Load products from backend database
 async function loadProducts() {
   try {
-    const response = await fetch('/api/products?limit=100&published=true');
+    const response = await fetch(`${API_BASE}/products?limit=100&published=true`);
     if (!response.ok) {
       throw new Error(`Failed to load products: ${response.status}`);
     }

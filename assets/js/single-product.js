@@ -18,7 +18,7 @@ async function loadProductDetails() {
       return;
     }
 
-    const response = await fetch(`/api/products/${productId}`);
+    const response = await fetch(`${API_BASE}/products/${productId}`);
     if (!response.ok) {
       throw new Error(`Failed to load product: ${response.status}`);
     }
