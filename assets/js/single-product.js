@@ -87,11 +87,8 @@ function showError(message) {
   `;
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  loadProductDetails();
-
-  // Add to Cart button event
+// Setup Add to Cart button
+function setupAddToCartButton() {
   const addToCartBtn = document.querySelector('.add-to-cart-btn');
   if (addToCartBtn) {
     addToCartBtn.addEventListener('click', async () => {
@@ -99,10 +96,18 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Product not loaded.');
         return;
       }
+      
+      // Check if CartModule is available
+      if (typeof window.CartModule === 'undefined' || typeof window.CartModule.addItem !== 'function') {
+        console.error('CartModule not loaded properly');
+        alert('Cart system is not loaded. Please refresh the page.');
+        return;
+      }
+      
       addToCartBtn.disabled = true;
       addToCartBtn.textContent = 'Adding...';
       try {
-        await CartModule.addItem(currentProduct._id, 1);
+        await window.CartModule.addItem(currentProduct._id, 1);
         addToCartBtn.textContent = 'Added!';
         setTimeout(() => {
           addToCartBtn.textContent = 'Add to Cart';
@@ -116,4 +121,30 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('[single-product.js] DOMContentLoaded event fired');
+  
+  // Wait for CartModule to be available
+  let attempts = 0;
+  const waitForCart = setInterval(() => {
+    attempts++;
+    console.log('[single-product.js] Waiting for CartModule... attempt', attempts);
+    if (typeof window.CartModule !== 'undefined' && window.CartModule.addItem) {
+      clearInterval(waitForCart);
+      console.log('[single-product.js] ✓ CartModule is available');
+      loadProductDetails();
+      setupAddToCartButton();
+    } else if (attempts > 10) {
+      clearInterval(waitForCart);
+      console.error('[single-product.js] ✗ CartModule failed to load after 10 attempts');
+      loadProductDetails();
+      setupAddToCartButton(); // Still setup button but it may fail
+    }
+  }, 100);
+  
+  // Fallback: start loading immediately
+  loadProductDetails();
 });
