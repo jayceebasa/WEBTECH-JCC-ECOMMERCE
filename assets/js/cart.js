@@ -431,7 +431,7 @@ function openCheckoutSuccessModal(checkoutData) {
 
   if (emailStatusEl) {
     if (checkoutData.receiptEmailSent) {
-      emailStatusEl.textContent = 'A beautiful receipt has been sent to your email.';
+      emailStatusEl.textContent = 'A receipt has been sent to your email.';
       emailStatusEl.classList.remove('is-warning');
       emailStatusEl.classList.add('is-success');
     } else {
