@@ -519,6 +519,212 @@
   font-weight: 600;
 }
 
+/* Checkout Success Modal */
+.checkout-modal-open {
+  overflow: hidden;
+}
+
+.checkout-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(24, 15, 40, 0.52);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 4000;
+}
+
+.checkout-modal-overlay.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.checkout-modal-card {
+  width: min(560px, 100%);
+  border-radius: 24px;
+  background: #ffffff;
+  border: 2px solid #cdb9e1;
+  box-shadow: 0 18px 44px rgba(39, 21, 62, 0.24);
+  padding: 28px 28px 24px;
+  position: relative;
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.25s ease;
+}
+
+.checkout-modal-overlay.is-open .checkout-modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.checkout-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  border: none;
+  background: transparent;
+  color: #735b90;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.checkout-modal-close:hover {
+  background: #f1e8fb;
+  color: #2e2545;
+}
+
+.checkout-modal-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  margin: 2px auto 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  color: #ffffff;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a88ec3 0%, #2e2545 100%);
+  box-shadow: 0 8px 20px rgba(92, 68, 125, 0.35);
+}
+
+.checkout-modal-title {
+  margin: 0;
+  text-align: center;
+  color: #2e2545;
+  font-size: 28px;
+  letter-spacing: 0.02em;
+  font-family: 'Lora', serif;
+  font-weight: 500;
+}
+
+.checkout-modal-subtitle {
+  margin: 10px 0 18px;
+  text-align: center;
+  color: #6e5b86;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+}
+
+.checkout-modal-details {
+  background: linear-gradient(180deg, #faf7fe 0%, #f7f2fd 100%);
+  border: 1px solid #e6d9f4;
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.checkout-modal-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9def7;
+  color: #6d5b85;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+}
+
+.checkout-modal-row strong {
+  color: #2e2545;
+  font-weight: 600;
+  text-align: right;
+}
+
+.checkout-modal-row-total {
+  border-bottom: none;
+}
+
+.checkout-modal-row-total strong {
+  font-size: 16px;
+}
+
+.checkout-modal-email-status {
+  margin: 14px 0 0;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+}
+
+.checkout-modal-email-status.is-success {
+  color: #2f7a57;
+}
+
+.checkout-modal-email-status.is-warning {
+  color: #9a6c18;
+}
+
+.checkout-modal-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.checkout-modal-btn {
+  border-radius: 999px;
+  padding: 12px 20px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.checkout-modal-btn:hover {
+  transform: translateY(-1px);
+}
+
+.checkout-modal-btn-primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, #a88ec3 0%, #2e2545 100%);
+  box-shadow: 0 8px 16px rgba(75, 53, 104, 0.28);
+}
+
+.checkout-modal-btn-secondary {
+  color: #2e2545;
+  border-color: #ccb7e2;
+  background: #f7f1fd;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 560px) {
+  .checkout-modal-overlay {
+    padding: 14px;
+  }
+
+  .checkout-modal-card {
+    border-radius: 18px;
+    padding: 22px 18px 18px;
+  }
+
+  .checkout-modal-title {
+    font-size: 24px;
+  }
+
+  .checkout-modal-row {
+    font-size: 13px;
+  }
+
+  .checkout-modal-actions {
+    flex-direction: column;
+  }
+
+  .checkout-modal-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 .empty-cart-message a:hover {
   text-decoration: underline;
 }

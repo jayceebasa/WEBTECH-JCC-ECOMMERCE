@@ -345,6 +345,150 @@ window.removeCartItem = async function(productId) {
   renderCartPage();
 };
 
+function formatCheckoutAmount(value) {
+  return `₱${Number(value || 0).toLocaleString()}.00`;
+}
+
+function getCheckoutSuccessModal() {
+  let modal = document.getElementById('checkoutSuccessModal');
+  if (modal) return modal;
+
+  modal = document.createElement('div');
+  modal.id = 'checkoutSuccessModal';
+  modal.className = 'checkout-modal-overlay';
+  modal.setAttribute('aria-hidden', 'true');
+  modal.innerHTML = `
+    <div class="checkout-modal-card" role="dialog" aria-modal="true" aria-labelledby="checkoutSuccessTitle">
+      <button type="button" class="checkout-modal-close" data-close-checkout-modal aria-label="Close">×</button>
+      <div class="checkout-modal-icon">✓</div>
+      <h2 id="checkoutSuccessTitle" class="checkout-modal-title">Order Confirmed</h2>
+      <p class="checkout-modal-subtitle">Thank you for shopping with WST JCC E-Commerce.</p>
+
+      <div class="checkout-modal-details">
+        <div class="checkout-modal-row">
+          <span>Order Number</span>
+          <strong data-checkout-order-number></strong>
+        </div>
+        <div class="checkout-modal-row">
+          <span>Purchase Date</span>
+          <strong data-checkout-purchased-at></strong>
+        </div>
+        <div class="checkout-modal-row checkout-modal-row-total">
+          <span>Total Paid</span>
+          <strong data-checkout-total></strong>
+        </div>
+      </div>
+
+      <p class="checkout-modal-email-status" data-checkout-email-status></p>
+
+      <div class="checkout-modal-actions">
+        <button type="button" class="checkout-modal-btn checkout-modal-btn-secondary" data-close-checkout-modal>Stay on Cart</button>
+        <a href="shop.html" class="checkout-modal-btn checkout-modal-btn-primary">Continue Shopping</a>
+      </div>
+    </div>
+  `;
+
+  modal.addEventListener('click', (event) => {
+    if (event.target === modal || event.target.closest('[data-close-checkout-modal]')) {
+      closeCheckoutSuccessModal();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+      closeCheckoutSuccessModal();
+    }
+  });
+
+  document.body.appendChild(modal);
+  return modal;
+}
+
+function closeCheckoutSuccessModal() {
+  const modal = document.getElementById('checkoutSuccessModal');
+  if (!modal) return;
+  modal.classList.remove('is-open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('checkout-modal-open');
+}
+
+function openCheckoutSuccessModal(checkoutData) {
+  const modal = getCheckoutSuccessModal();
+  const orderNumber = checkoutData.orderNumber || 'N/A';
+  const total = formatCheckoutAmount(checkoutData.total);
+  const purchasedAt = checkoutData.purchasedAt
+    ? new Date(checkoutData.purchasedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+    : 'N/A';
+
+  const orderEl = modal.querySelector('[data-checkout-order-number]');
+  const purchasedEl = modal.querySelector('[data-checkout-purchased-at]');
+  const totalEl = modal.querySelector('[data-checkout-total]');
+  const emailStatusEl = modal.querySelector('[data-checkout-email-status]');
+
+  if (orderEl) orderEl.textContent = orderNumber;
+  if (purchasedEl) purchasedEl.textContent = purchasedAt;
+  if (totalEl) totalEl.textContent = total;
+
+  if (emailStatusEl) {
+    if (checkoutData.receiptEmailSent) {
+      emailStatusEl.textContent = 'A beautiful receipt has been sent to your email.';
+      emailStatusEl.classList.remove('is-warning');
+      emailStatusEl.classList.add('is-success');
+    } else {
+      emailStatusEl.textContent = 'Order placed successfully. Receipt email could not be sent right now.';
+      emailStatusEl.classList.remove('is-success');
+      emailStatusEl.classList.add('is-warning');
+    }
+  }
+
+  modal.classList.add('is-open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('checkout-modal-open');
+}
+
+window.processPurchase = async function() {
+  if (!isUserLoggedIn()) {
+    alert('Please sign in to complete checkout and receive your receipt by email.');
+    window.location.href = window.location.pathname.includes('/pages/') ? 'login.html?redirect=cart.html' : 'pages/login.html?redirect=pages/cart.html';
+    return;
+  }
+
+  const buyButton = document.querySelector('.buy-button');
+  const originalLabel = buyButton ? buyButton.textContent : 'Buy Now';
+
+  if (buyButton) {
+    buyButton.disabled = true;
+    buyButton.textContent = 'Processing...';
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/cart/checkout`, {
+      method: 'POST',
+      headers: buildAuthHeaders({ 'Content-Type': 'application/json' }),
+      credentials: 'include'
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || 'Checkout failed. Please try again.');
+    }
+
+    await renderCartPage();
+
+    const checkoutData = result.data || {};
+    openCheckoutSuccessModal(checkoutData);
+  } catch (error) {
+    console.error('[processPurchase] Error:', error);
+    alert(error.message || 'Checkout failed. Please try again.');
+  } finally {
+    if (buyButton) {
+      buyButton.disabled = false;
+      buyButton.textContent = originalLabel;
+    }
+  }
+};
+
 // Only run on cart.html
 if (window.location.pathname.endsWith('cart.html')) {
   document.addEventListener('DOMContentLoaded', renderCartPage);
