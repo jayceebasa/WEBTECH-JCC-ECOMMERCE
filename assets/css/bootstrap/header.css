@@ -458,7 +458,7 @@ html {
     margin-bottom: 25px !important;
     display: block;
     position: relative;
-    z-index: 1031;
+    z-index: 900;
 }
 
 /* Sticky header positioning */

@@ -5,9 +5,16 @@
  * The httpOnly cookie is still set by the backend as a security layer in production.
  */
 
-const USER_API = `${API_BASE}/auth`;
+const AUTH_API_BASE = (typeof API_BASE !== 'undefined')
+  ? API_BASE
+  : ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:5000/api'
+      : '/api');
+
+const USER_API = `${AUTH_API_BASE}/auth`;
 const TOKEN_KEY = 'userToken';
 const USER_CACHE_KEY = 'userCache';
+const GUEST_CART_KEY = 'guestCart';
 
 const userAuth = {
   _getToken() {
@@ -32,6 +39,65 @@ const userAuth = {
   },
 
   /**
+   * Merge guest cart items into authenticated user cart.
+   * Keeps failed items in guest storage for retry.
+   */
+  mergeGuestCart: async (token) => {
+    let guestItems = [];
+
+    try {
+      guestItems = JSON.parse(localStorage.getItem(GUEST_CART_KEY) || '[]');
+    } catch {
+      guestItems = [];
+    }
+
+    if (!Array.isArray(guestItems) || guestItems.length === 0) {
+      return { merged: 0, failed: 0 };
+    }
+
+    const failedItems = [];
+    let mergedCount = 0;
+
+    for (const item of guestItems) {
+      const productId = item && item.productId;
+      const quantity = Math.max(1, Number(item && item.quantity) || 1);
+
+      if (!productId) {
+        continue;
+      }
+
+      try {
+        const res = await fetch(`${AUTH_API_BASE}/cart/add`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          credentials: 'include',
+          body: JSON.stringify({ productId, quantity })
+        });
+
+        if (!res.ok) {
+          failedItems.push({ productId, quantity });
+          continue;
+        }
+
+        mergedCount += 1;
+      } catch {
+        failedItems.push({ productId, quantity });
+      }
+    }
+
+    if (failedItems.length > 0) {
+      localStorage.setItem(GUEST_CART_KEY, JSON.stringify(failedItems));
+    } else {
+      localStorage.removeItem(GUEST_CART_KEY);
+    }
+
+    return { merged: mergedCount, failed: failedItems.length };
+  },
+
+  /**
    * Send the Google ID token credential to the backend.
    * Stores the returned JWT and user in localStorage for subsequent requests.
    */
@@ -46,6 +112,12 @@ const userAuth = {
     if (data.success && data.token) {
       localStorage.setItem(TOKEN_KEY, data.token);
       userAuth._setCachedUser(data.user);
+
+      try {
+        await userAuth.mergeGuestCart(data.token);
+      } catch (err) {
+        console.warn('Guest cart merge failed after login:', err);
+      }
     }
     return data;
   },
@@ -124,3 +196,6 @@ const userAuth = {
     }
   }
 };
+
+// Ensure availability from inline callbacks and other scripts.
+window.userAuth = userAuth;

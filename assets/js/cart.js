@@ -11,6 +11,13 @@ try {
 const LOCAL_CART_KEY = 'guestCart';
 const TOKEN_KEY = 'userToken';
 
+function buildAuthHeaders(extraHeaders = {}) {
+  const token = localStorage.getItem(TOKEN_KEY);
+  return token
+    ? { ...extraHeaders, Authorization: `Bearer ${token}` }
+    : extraHeaders;
+}
+
 // Helper to check if user is logged in
 function isUserLoggedIn() {
   return !!localStorage.getItem(TOKEN_KEY);
@@ -50,7 +57,7 @@ const CartModule = {
       try {
         const res = await fetch(`${API_BASE}/cart/add`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: buildAuthHeaders({ 'Content-Type': 'application/json' }),
           credentials: 'include',
           body: JSON.stringify({ productId, quantity })
         });
@@ -78,7 +85,10 @@ const CartModule = {
   async getCart() {
     if (isUserLoggedIn()) {
       try {
-        const res = await fetch(`${API_BASE}/cart`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE}/cart`, {
+          headers: buildAuthHeaders(),
+          credentials: 'include'
+        });
         if (!res.ok) throw new Error('Failed to get cart');
         const data = await res.json();
         return data.data || { items: [] };
@@ -99,7 +109,7 @@ const CartModule = {
       try {
         const res = await fetch(`${API_BASE}/cart/update`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: buildAuthHeaders({ 'Content-Type': 'application/json' }),
           credentials: 'include',
           body: JSON.stringify({ productId, quantity })
         });
@@ -125,7 +135,7 @@ const CartModule = {
       try {
         const res = await fetch(`${API_BASE}/cart/remove`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: buildAuthHeaders({ 'Content-Type': 'application/json' }),
           credentials: 'include',
           body: JSON.stringify({ productId })
         });

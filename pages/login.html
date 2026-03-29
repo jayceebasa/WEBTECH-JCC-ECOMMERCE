@@ -177,8 +177,6 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="../assets/js/user-auth.js"></script>
   <script>
-    const API_BASE = 'http://localhost:5000/api';
-
     async function handleGoogleCredential(response) {
       const loading = document.getElementById('loading');
       loading.style.display = 'block';
