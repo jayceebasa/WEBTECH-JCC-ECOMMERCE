@@ -1,7 +1,7 @@
 // Dynamic API base URL for local and production
 // Use relative path in production, full URL in local dev
 const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:5000/api'
+    ? `${window.location.protocol}//${window.location.hostname}:5000/api`
     : '/api';
 // Utility functions for the WST JCC E-Commerce application
 

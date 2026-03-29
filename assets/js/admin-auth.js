@@ -3,6 +3,25 @@
  * Handles authentication using httpOnly cookies (most secure)
  */
 
+(function bootstrapAdminTheme() {
+  const THEME_KEY = 'siteTheme';
+
+  function applyStoredTheme() {
+    const theme = localStorage.getItem(THEME_KEY);
+    const isDark = theme === 'dark';
+    document.documentElement.classList.toggle('site-theme-dark', isDark);
+    if (document.body) {
+      document.body.classList.toggle('site-theme-dark', isDark);
+    }
+  }
+
+  applyStoredTheme();
+  document.addEventListener('DOMContentLoaded', applyStoredTheme);
+  window.addEventListener('storage', (event) => {
+    if (event.key === THEME_KEY) applyStoredTheme();
+  });
+})();
+
 const ADMIN_API_BASE = (typeof API_BASE !== 'undefined')
   ? API_BASE
   : ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')

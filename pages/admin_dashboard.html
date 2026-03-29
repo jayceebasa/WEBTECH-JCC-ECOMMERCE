@@ -395,6 +395,157 @@
       font-weight: 600;
     }
 
+    .content-view {
+      display: none;
+    }
+
+    .content-view.active {
+      display: block;
+    }
+
+    .panel {
+      background: white;
+      padding: 24px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .panel h2 {
+      color: #333;
+      margin-bottom: 14px;
+      font-size: 20px;
+    }
+
+    .empty-text {
+      color: #777;
+      font-size: 14px;
+      padding: 6px 0;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .admin-table th,
+    .admin-table td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid #edf1f7;
+      color: #425466;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    .admin-table th {
+      color: #2f3a4a;
+      font-weight: 700;
+      background: #f7f9fc;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .analytics-metric {
+      border: 1px solid #e9edf3;
+      border-radius: 10px;
+      padding: 16px;
+      background: #fafbfd;
+    }
+
+    .analytics-metric-label {
+      color: #6c7787;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .analytics-metric-value {
+      color: #2f3a4a;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .theme-toggle-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #ffffff;
+      background: linear-gradient(135deg, #5a67d8 0%, #7f5cc8 100%);
+      box-shadow: 0 8px 18px rgba(90, 103, 216, 0.28);
+    }
+
+    .theme-help {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #6c7787;
+    }
+
+    .site-theme-dark body {
+      background: #141820;
+      color: #ecf0f7;
+    }
+
+    .site-theme-dark .navbar {
+      background: linear-gradient(135deg, #1d2536 0%, #27324a 100%);
+    }
+
+    .site-theme-dark .sidebar {
+      background: linear-gradient(180deg, #171d29 0%, #202b3f 100%);
+    }
+
+    .site-theme-dark .welcome-header,
+    .site-theme-dark .card,
+    .site-theme-dark .quick-actions,
+    .site-theme-dark .recent-activity,
+    .site-theme-dark .panel,
+    .site-theme-dark .analytics-metric {
+      background: #1d2536;
+      color: #ecf0f7;
+      box-shadow: none;
+      border-color: #2f3b52;
+    }
+
+    .site-theme-dark .welcome-header h1,
+    .site-theme-dark .card h3,
+    .site-theme-dark .quick-actions h2,
+    .site-theme-dark .recent-activity h2,
+    .site-theme-dark .panel h2,
+    .site-theme-dark .analytics-metric-value,
+    .site-theme-dark .admin-table th,
+    .site-theme-dark .admin-table td,
+    .site-theme-dark .activity-text,
+    .site-theme-dark .activity-time,
+    .site-theme-dark .card-label,
+    .site-theme-dark .welcome-header p,
+    .site-theme-dark .empty-text,
+    .site-theme-dark .theme-help,
+    .site-theme-dark .analytics-metric-label {
+      color: #d8e0ef;
+    }
+
+    .site-theme-dark .admin-table th {
+      background: #222c3f;
+    }
+
+    .site-theme-dark .admin-table th,
+    .site-theme-dark .admin-table td,
+    .site-theme-dark .activity-item {
+      border-bottom-color: #2f3b52;
+    }
+
     .badge-success {
       background: #d5f4e6;
       color: #27ae60;
@@ -585,16 +736,17 @@
       <h3>Menu</h3>
       <button class="close-sidebar-btn" id="closeSidebarBtn" onclick="closeSidebar()">✕</button>
     </div>
-    <a href="#dashboard" class="active" onclick="navigateTo('dashboard')">📊 Dashboard</a>
-    <a href="admin_products.html" onclick="navigateTo('products')">📦 Products</a>
-    <a href="#orders" onclick="navigateTo('orders')">🛒 Orders</a>
-    <a href="#customers" onclick="navigateTo('customers')">👥 Customers</a>
-    <a href="#analytics" onclick="navigateTo('analytics')">📈 Analytics</a>
-    <a href="#settings" onclick="navigateTo('settings')">⚙️ Settings</a>
+    <a href="admin_dashboard.html?tab=dashboard" class="active" data-section="dashboard" onclick="return navigateTo('dashboard', event)">📊 Dashboard</a>
+    <a href="admin_products.html?tab=products" data-section="products" onclick="return navigateTo('products', event)">📦 Products</a>
+    <a href="admin_dashboard.html?tab=orders" data-section="orders" onclick="return navigateTo('orders', event)">🛒 Orders</a>
+    <a href="admin_dashboard.html?tab=customers" data-section="customers" onclick="return navigateTo('customers', event)">👥 Customers</a>
+    <a href="admin_dashboard.html?tab=analytics" data-section="analytics" onclick="return navigateTo('analytics', event)">📈 Analytics</a>
+    <a href="admin_dashboard.html?tab=settings" data-section="settings" onclick="return navigateTo('settings', event)">⚙️ Settings</a>
   </div>
 
   <!-- Main Content -->
   <div class="main-content">
+    <section id="dashboardView" class="content-view active">
     <!-- Welcome Section -->
     <div class="welcome-header">
       <h1>Welcome to Admin Dashboard</h1>
@@ -639,50 +791,110 @@
       <h2>Quick Actions</h2>
       <div class="action-buttons">
         <a href="admin_products.html" class="btn btn-primary">➕ Add New Product</a>
-        <button class="btn btn-success" onclick="navigateTo('view-orders')">📋 View Orders</button>
-        <button class="btn btn-warning" onclick="navigateTo('manage-inventory')">📊 Manage Inventory</button>
-        <button class="btn btn-secondary" onclick="navigateTo('settings')">⚙️ Settings</button>
+        <button class="btn btn-success" onclick="return navigateTo('orders', event)">📋 View Orders</button>
+        <button class="btn btn-warning" onclick="return navigateTo('analytics', event)">📊 Analytics</button>
+        <button class="btn btn-secondary" onclick="return navigateTo('settings', event)">🌙 Dark Mode</button>
       </div>
     </div>
 
     <!-- Recent Activity -->
     <div class="recent-activity">
       <h2>Recent Activity</h2>
-      <ul class="activity-list">
+      <ul class="activity-list" id="recentActivityList">
         <li class="activity-item">
           <div>
-            <div class="activity-text">New order received - Order #1001</div>
-            <div class="activity-time">2 hours ago</div>
+            <div class="activity-text">Loading activity...</div>
+            <div class="activity-time">Please wait</div>
           </div>
-          <span class="activity-badge badge-success">New</span>
-        </li>
-        <li class="activity-item">
-          <div>
-            <div class="activity-text">Product "Summer Dress" stock updated</div>
-            <div class="activity-time">5 hours ago</div>
-          </div>
-          <span class="activity-badge badge-info">Updated</span>
-        </li>
-        <li class="activity-item">
-          <div>
-            <div class="activity-text">Customer feedback received</div>
-            <div class="activity-time">1 day ago</div>
-          </div>
-          <span class="activity-badge badge-warning">Review</span>
-        </li>
-        <li class="activity-item">
-          <div>
-            <div class="activity-text">Low stock alert for product "Lipstick"</div>
-            <div class="activity-time">2 days ago</div>
-          </div>
-          <span class="activity-badge badge-danger">Alert</span>
         </li>
       </ul>
     </div>
+    </section>
+
+    <section id="ordersView" class="content-view">
+      <div class="panel">
+        <h2>Orders</h2>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order Number</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Total</th>
+                <th>Purchased At</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="customersView" class="content-view">
+      <div class="panel">
+        <h2>Customers</h2>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Orders</th>
+                <th>Total Spent</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody id="customersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="analyticsView" class="content-view">
+      <div class="panel">
+        <h2>Analytics</h2>
+        <div class="analytics-grid">
+          <div class="analytics-metric">
+            <div class="analytics-metric-label">Average Order Value</div>
+            <div class="analytics-metric-value" id="avgOrderValue">₱0.00</div>
+          </div>
+          <div class="analytics-metric">
+            <div class="analytics-metric-label">Repeat Customer Rate</div>
+            <div class="analytics-metric-value" id="repeatCustomerRate">0%</div>
+          </div>
+          <div class="analytics-metric">
+            <div class="analytics-metric-label">Best Revenue Month</div>
+            <div class="analytics-metric-value" id="bestMonth">N/A</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Orders</th>
+                <th>Revenue</th>
+              </tr>
+            </thead>
+            <tbody id="monthlyRevenueTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="settingsView" class="content-view">
+      <div class="panel">
+        <h2>Settings</h2>
+        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleSiteTheme()">Enable Dark Mode</button>
+      </div>
+    </section>
   </div>
 
   <script>
-    // Hamburger Menu Toggle
+    const THEME_STORAGE_KEY = 'siteTheme';
+
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
       const overlay = document.getElementById('sidebarOverlay');
@@ -697,165 +909,279 @@
       overlay.classList.remove('active');
     }
 
-    // Close sidebar when clicking on a link
-    document.addEventListener('DOMContentLoaded', () => {
-      const sidebarLinks = document.querySelectorAll('.sidebar a');
-      sidebarLinks.forEach(link => {
-        link.addEventListener('click', closeSidebar);
-      });
-    });
+    function formatCurrency(value) {
+      return `₱${Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
 
-    // Load admin data on page load
-    document.addEventListener('DOMContentLoaded', () => {
-      loadAdminData();
-      setGreeting();
-    });
+    function formatDate(value) {
+      if (!value) return 'N/A';
+      return new Date(value).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+    }
 
-    // Set greeting based on time
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     function setGreeting() {
       const hour = new Date().getHours();
       let greeting = '';
-      
-      if (hour < 12) {
-        greeting = 'Good morning';
-      } else if (hour < 18) {
-        greeting = 'Good afternoon';
-      } else {
-        greeting = 'Good evening';
-      }
-      
+      if (hour < 12) greeting = 'Good morning';
+      else if (hour < 18) greeting = 'Good afternoon';
+      else greeting = 'Good evening';
       document.getElementById('greeting').textContent = greeting;
     }
 
-    // Load admin data from localStorage or API
-    function loadAdminData() {
-      const adminEmail = localStorage.getItem('adminEmail') || 'admin@webtech-jcc.com';
-      const adminName = adminEmail.split('@')[0].toUpperCase();
-      
-      document.getElementById('adminName').textContent = adminName;
-      document.getElementById('welcomeName').textContent = adminName;
-      document.getElementById('adminAvatar').textContent = adminName.charAt(0);
-      
-      // Load dashboard stats (these should come from your API)
-      loadDashboardStats();
+    function applyTheme(theme) {
+      const isDark = theme === 'dark';
+      document.documentElement.classList.toggle('site-theme-dark', isDark);
+      document.body.classList.toggle('site-theme-dark', isDark);
+      updateThemeButton();
     }
 
-    // Load dashboard statistics
-    async function loadDashboardStats() {
-      try {
-        // Fetch products count from API
-        const productsRes = await fetch(`${adminAuth.API_BASE}/products?limit=1`, {
-          credentials: 'include'
-        });
-        if (productsRes.ok) {
-          const productsData = await productsRes.json();
-          // Access the total count from response
-          const total = productsData.total || productsData.data?.length || 0;
-          document.getElementById('totalProducts').textContent = total;
-          console.log('✓ Loaded total products:', total);
-        } else {
-          console.warn('Failed to fetch products');
-          document.getElementById('totalProducts').textContent = '0';
-        }
-      } catch (error) {
-        console.error('Error loading dashboard stats:', error);
-        // Set placeholder values if API not available
-        document.getElementById('totalProducts').textContent = '0';
-        document.getElementById('totalOrders').textContent = '0';
-        document.getElementById('totalCustomers').textContent = '0';
-        document.getElementById('totalRevenue').textContent = '₱0.00';
-      }
+    function updateThemeButton() {
+      const btn = document.getElementById('themeToggleBtn');
+      if (!btn) return;
+      const isDark = document.documentElement.classList.contains('site-theme-dark');
+      btn.textContent = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
     }
 
-    // Navigate to different sections
-    function navigateTo(section) {
-      // Remove active class from all links
-      document.querySelectorAll('.sidebar a').forEach(link => {
+    function toggleSiteTheme() {
+      const isDark = document.documentElement.classList.contains('site-theme-dark');
+      const nextTheme = isDark ? 'light' : 'dark';
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      applyTheme(nextTheme);
+    }
+
+    function setActiveSidebar(section) {
+      document.querySelectorAll('.sidebar a[data-section]').forEach((link) => {
         link.classList.remove('active');
       });
-      
-      // Add active class to clicked link
-      event.target.classList.add('active');
-      
-      // Navigate to admin products page
-      if (event.target.getAttribute('href')) {
-        window.location.href = event.target.getAttribute('href');
-      }
+      const activeLink = document.querySelector(`.sidebar a[data-section="${section}"]`);
+      if (activeLink) activeLink.classList.add('active');
     }
 
-    // Handle logout
+    function showView(section) {
+      const views = ['dashboard', 'orders', 'customers', 'analytics', 'settings'];
+      views.forEach((view) => {
+        const node = document.getElementById(`${view}View`);
+        if (node) {
+          node.classList.toggle('active', view === section);
+        }
+      });
+      setActiveSidebar(section);
+    }
+
+    function navigateTo(section, event) {
+      if (event) event.preventDefault();
+
+      if (section === 'products') {
+        window.location.href = 'admin_products.html?tab=products';
+        return false;
+      }
+
+      const allowedSections = ['dashboard', 'orders', 'customers', 'analytics', 'settings'];
+      const targetSection = allowedSections.includes(section) ? section : 'dashboard';
+      window.location.href = `admin_dashboard.html?tab=${targetSection}`;
+      return false;
+    }
+
     function handleLogout() {
       if (confirm('Are you sure you want to logout?')) {
-        adminAuth.logout(); // Call the logout method to clear cookie and redirect
+        adminAuth.logout();
       }
     }
 
-    // Initialize admin page with authentication
+    function loadAdminIdentity() {
+      const email = adminAuth.getEmail() || localStorage.getItem('adminEmail') || 'admin@webtech-jcc.com';
+      const baseName = email.split('@')[0] || 'admin';
+      const displayName = baseName.toUpperCase();
+
+      const adminName = document.getElementById('adminName');
+      const welcomeName = document.getElementById('welcomeName');
+      const adminAvatar = document.getElementById('adminAvatar');
+
+      if (adminName) adminName.textContent = displayName;
+      if (welcomeName) welcomeName.textContent = displayName;
+      if (adminAvatar) adminAvatar.textContent = displayName.charAt(0);
+    }
+
+    function renderRecentActivity(activityList) {
+      const list = document.getElementById('recentActivityList');
+      if (!list) return;
+
+      if (!Array.isArray(activityList) || activityList.length === 0) {
+        list.innerHTML = `<li class="activity-item"><div><div class="activity-text">No recent activity yet.</div><div class="activity-time">Check back later</div></div></li>`;
+        return;
+      }
+
+      const badgeClassMap = {
+        new: 'badge-success',
+        info: 'badge-info',
+        warning: 'badge-warning',
+        danger: 'badge-danger'
+      };
+
+      list.innerHTML = activityList.map((activity) => {
+        const badgeKey = String(activity.badge || 'info').toLowerCase();
+        const badgeClass = badgeClassMap[badgeKey] || 'badge-info';
+        const badgeText = badgeKey.charAt(0).toUpperCase() + badgeKey.slice(1);
+        return `
+          <li class="activity-item">
+            <div>
+              <div class="activity-text">${escapeHtml(activity.text)}</div>
+              <div class="activity-time">${escapeHtml(activity.time)}</div>
+            </div>
+            <span class="activity-badge ${badgeClass}">${escapeHtml(badgeText)}</span>
+          </li>
+        `;
+      }).join('');
+    }
+
+    function renderOrders(orders) {
+      const tbody = document.getElementById('ordersTableBody');
+      if (!tbody) return;
+
+      if (!Array.isArray(orders) || orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-text">No orders found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = orders.map((order) => `
+        <tr>
+          <td>${escapeHtml(order.orderNumber)}</td>
+          <td>${escapeHtml(order.customerName)}<br><small>${escapeHtml(order.customerEmail)}</small></td>
+          <td>${Number(order.itemsCount || 0)}</td>
+          <td>${formatCurrency(order.total)}</td>
+          <td>${formatDate(order.purchasedAt)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderCustomers(customers) {
+      const tbody = document.getElementById('customersTableBody');
+      if (!tbody) return;
+
+      if (!Array.isArray(customers) || customers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="empty-text">No customers found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = customers.map((customer) => `
+        <tr>
+          <td>${escapeHtml(customer.name)}</td>
+          <td>${escapeHtml(customer.email)}</td>
+          <td>${Number(customer.ordersCount || 0)}</td>
+          <td>${formatCurrency(customer.totalSpent)}</td>
+          <td>${formatDate(customer.joinedAt)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderAnalytics(analytics) {
+      const avgOrderValue = document.getElementById('avgOrderValue');
+      const repeatCustomerRate = document.getElementById('repeatCustomerRate');
+      const bestMonth = document.getElementById('bestMonth');
+      const tbody = document.getElementById('monthlyRevenueTableBody');
+
+      if (avgOrderValue) avgOrderValue.textContent = formatCurrency(analytics?.averageOrderValue || 0);
+      if (repeatCustomerRate) repeatCustomerRate.textContent = `${Number(analytics?.repeatCustomerRate || 0).toFixed(1)}%`;
+      if (bestMonth) {
+        bestMonth.textContent = analytics?.bestMonth
+          ? `${analytics.bestMonth.month} (${formatCurrency(analytics.bestMonth.revenue)})`
+          : 'N/A';
+      }
+
+      const monthlyRevenue = Array.isArray(analytics?.monthlyRevenue) ? analytics.monthlyRevenue : [];
+      if (!tbody) return;
+
+      if (monthlyRevenue.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="empty-text">No analytics data yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = monthlyRevenue.map((row) => `
+        <tr>
+          <td>${escapeHtml(row.month)}</td>
+          <td>${Number(row.orders || 0)}</td>
+          <td>${formatCurrency(row.revenue)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderStats(stats) {
+      document.getElementById('totalProducts').textContent = Number(stats?.totalProducts || 0);
+      document.getElementById('totalOrders').textContent = Number(stats?.totalOrders || 0);
+      document.getElementById('totalCustomers').textContent = Number(stats?.totalCustomers || 0);
+      document.getElementById('totalRevenue').textContent = formatCurrency(stats?.totalRevenue || 0);
+    }
+
+    async function fetchDashboardData() {
+      const response = await fetch(`${adminAuth.API_BASE}/auth/admin/dashboard`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+
+      if (response.status === 401 || response.status === 403) {
+        adminAuth.clearAuth();
+        window.location.href = 'admin_login.html';
+        return;
+      }
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Failed to load dashboard data');
+      }
+
+      const payload = result.data || {};
+      renderStats(payload.stats || {});
+      renderRecentActivity(payload.recentActivity || []);
+      renderOrders(payload.orders || []);
+      renderCustomers(payload.customers || []);
+      renderAnalytics(payload.analytics || {});
+    }
+
     async function initializeAdminPage() {
-      // Only run once
       if (window.adminInitialized) return;
       window.adminInitialized = true;
 
-      // Require authentication - redirects to login if not authenticated
       const isAuthenticated = await adminAuth.requireAuth();
-      if (!isAuthenticated) {
-        return; // requireAuth handles redirect
-      }
+      if (!isAuthenticated) return;
 
-      // Start periodic token validation and pageshow listener
       adminAuth.startTokenValidation();
+      loadAdminIdentity();
+      setGreeting();
+      applyTheme(localStorage.getItem(THEME_STORAGE_KEY) || 'light');
 
-      // Display user email
-      const userEmail = adminAuth.getEmail();
-      if (userEmail) {
-        const adminNameElement = document.getElementById('adminName');
-        if (adminNameElement) {
-          adminNameElement.textContent = userEmail.split('@')[0];
-        }
-      }
-
-      // Load dashboard data
-      loadDashboardData();
-    }
-
-    // Load dashboard data
-    async function loadDashboardData() {
       try {
-        // Example: Fetch admin stats
-        const response = await fetch(`${adminAuth.API_BASE}/products`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include'
-        });
-
-        if (response.status === 401) {
-          // Token expired, logout
-          adminAuth.clearAuth();
-          window.location.href = 'admin_login.html';
-          return;
-        }
-
-        // Dashboard data loaded
-        console.log('Dashboard data loaded');
+        await fetchDashboardData();
       } catch (error) {
-        console.error('Error loading dashboard data:', error);
+        console.error('Failed to initialize dashboard:', error);
+        alert(error.message || 'Failed to load dashboard data');
       }
+
+      const selectedTab = new URLSearchParams(window.location.search).get('tab') || 'dashboard';
+      const allowedSections = ['dashboard', 'orders', 'customers', 'analytics', 'settings'];
+      showView(allowedSections.includes(selectedTab) ? selectedTab : 'dashboard');
     }
 
-    // Initialize on page load
-    window.addEventListener('DOMContentLoaded', initializeAdminPage);
-
-    // Prevent caching of admin pages
-    window.addEventListener('beforeunload', () => {
-      // This helps prevent going back to admin pages after logout
-      if (!sessionStorage.getItem('adminToken')) {
-        sessionStorage.clear();
+    window.addEventListener('storage', (event) => {
+      if (event.key === THEME_STORAGE_KEY) {
+        applyTheme(event.newValue || 'light');
       }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.sidebar a').forEach((link) => {
+        link.addEventListener('click', closeSidebar);
+      });
+      initializeAdminPage();
     });
   </script>
 </body>
 </html>
-  <!-- Load admin auth utility -->
-  <script src="../assets/js/admin-auth.js"></script>

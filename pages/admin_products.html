@@ -19,6 +19,54 @@
       background: #f5f7fa;
     }
 
+    .site-theme-dark body {
+      background: #141820;
+      color: #d8e0ef;
+    }
+
+    .site-theme-dark .navbar {
+      background: linear-gradient(135deg, #1d2536 0%, #27324a 100%);
+    }
+
+    .site-theme-dark .sidebar {
+      background: linear-gradient(180deg, #171d29 0%, #202b3f 100%);
+    }
+
+    .site-theme-dark .page-header,
+    .site-theme-dark .tabs,
+    .site-theme-dark .form-container,
+    .site-theme-dark .products-table,
+    .site-theme-dark .modal-content,
+    .site-theme-dark .bulk-actions,
+    .site-theme-dark .filter-section {
+      background: #1d2536 !important;
+      color: #d8e0ef !important;
+      border-color: #2f3b52 !important;
+      box-shadow: none !important;
+    }
+
+    .site-theme-dark h1,
+    .site-theme-dark h2,
+    .site-theme-dark h3,
+    .site-theme-dark p,
+    .site-theme-dark label,
+    .site-theme-dark span,
+    .site-theme-dark td,
+    .site-theme-dark th,
+    .site-theme-dark .table,
+    .site-theme-dark .tab-button {
+      color: #d8e0ef !important;
+    }
+
+    .site-theme-dark input,
+    .site-theme-dark select,
+    .site-theme-dark textarea,
+    .site-theme-dark button {
+      background-color: #222c3f;
+      color: #d8e0ef;
+      border-color: #3b4b66;
+    }
+
     /* Navbar */
     .navbar {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1019,12 +1067,12 @@
       <h3>Menu</h3>
       <button class="close-sidebar-btn" id="closeSidebarBtn" onclick="closeSidebar()">✕</button>
     </div>
-    <a href="admin_dashboard.html" onclick="navigateTo('dashboard')">📊 Dashboard</a>
-    <a href="admin_products.html" class="active" onclick="navigateTo('products')">📦 Products</a>
-    <a href="#orders" onclick="navigateTo('orders')">🛒 Orders</a>
-    <a href="#customers" onclick="navigateTo('customers')">👥 Customers</a>
-    <a href="#analytics" onclick="navigateTo('analytics')">📈 Analytics</a>
-    <a href="#settings" onclick="navigateTo('settings')">⚙️ Settings</a>
+    <a href="admin_dashboard.html?tab=dashboard" onclick="return navigateTo('dashboard', event)">📊 Dashboard</a>
+    <a href="admin_products.html?tab=products" class="active" onclick="return navigateTo('products', event)">📦 Products</a>
+    <a href="admin_dashboard.html?tab=orders" onclick="return navigateTo('orders', event)">🛒 Orders</a>
+    <a href="admin_dashboard.html?tab=customers" onclick="return navigateTo('customers', event)">👥 Customers</a>
+    <a href="admin_dashboard.html?tab=analytics" onclick="return navigateTo('analytics', event)">📈 Analytics</a>
+    <a href="admin_dashboard.html?tab=settings" onclick="return navigateTo('settings', event)">⚙️ Settings</a>
   </div>
 
   <!-- Main Content -->
@@ -2088,10 +2136,18 @@
     }
 
     // Navigate function
-    function navigateTo(section) {
-      if (section === 'dashboard') {
-        window.location.href = 'admin_dashboard.html';
+    function navigateTo(section, event) {
+      if (event) event.preventDefault();
+
+      if (section === 'products') {
+        window.location.href = 'admin_products.html?tab=products';
+        return false;
       }
+
+      const allowedSections = ['dashboard', 'orders', 'customers', 'analytics', 'settings'];
+      const targetSection = allowedSections.includes(section) ? section : 'dashboard';
+      window.location.href = `admin_dashboard.html?tab=${targetSection}`;
+      return false;
     }
 
     // Handle logout
