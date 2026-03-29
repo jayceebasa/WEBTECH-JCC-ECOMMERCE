@@ -1,5 +1,7 @@
 // Global variable to store all products
 let allProducts = [];
+let activeCategory = '';
+let activeSearchTerm = '';
 
 function showProductsLoading(count = 6) {
   const productsGrid = document.getElementById('productsGrid');
@@ -41,7 +43,7 @@ async function loadProducts() {
     const data = await response.json();
     // API returns products in data.data
     allProducts = data.data || data.products || [];
-    displayProducts(allProducts);
+    applyFilters();
   } catch (error) {
     console.error('Error loading products:', error);
     // Show error message on page
@@ -50,6 +52,31 @@ async function loadProducts() {
       productsGrid.innerHTML = '<div class="col-12"><p>Error loading products. Please refresh the page.</p></div>';
     }
   }
+}
+
+function applyFilters() {
+  const normalizedCategory = activeCategory.toLowerCase();
+  const normalizedSearch = activeSearchTerm.toLowerCase();
+
+  const filteredProducts = allProducts.filter((product) => {
+    const matchesCategory = !normalizedCategory || normalizedCategory === 'all'
+      ? true
+      : getProductCategoryName(product) === normalizedCategory;
+
+    const productName = (product.name || '').toLowerCase();
+    const matchesSearch = !normalizedSearch || productName.includes(normalizedSearch);
+
+    return matchesCategory && matchesSearch;
+  });
+
+  displayProducts(filteredProducts);
+}
+
+function getProductCategoryName(product) {
+  if (typeof product.category === 'object' && product.category) {
+    return (product.category.name || '').toLowerCase();
+  }
+  return (product.category || '').toLowerCase();
 }
 
 function displayProducts(products) {
@@ -92,31 +119,33 @@ function displayProducts(products) {
 
 // Filter products by category
 function filterByCategory(category) {
-  if (category === '' || category === 'all') {
-    // Show all products
-    displayProducts(allProducts);
-  } else {
-    // Filter products by selected category
-    // Handle category as either object (populated) or string (old format)
-    const filteredProducts = allProducts.filter(product => {
-      const productCategoryName = typeof product.category === 'object' 
-        ? product.category.name.toLowerCase() 
-        : product.category.toLowerCase();
-      return productCategoryName === category.toLowerCase();
-    });
-    displayProducts(filteredProducts);
-  }
+  activeCategory = category || '';
+  applyFilters();
+}
+
+function setSearchTerm(term) {
+  activeSearchTerm = (term || '').trim();
+  applyFilters();
 }
 
 // Initialize products on page load
 document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  activeSearchTerm = (params.get('search') || '').trim();
+
   loadProducts();
   
   // Add filter functionality
   const filterSelect = document.getElementById('categoryFilter');
   if (filterSelect) {
+    activeCategory = filterSelect.value || '';
     filterSelect.addEventListener('change', (e) => {
       filterByCategory(e.target.value);
     });
   }
+
+  window.addEventListener('header-search', (event) => {
+    const nextQuery = event?.detail?.query || '';
+    setSearchTerm(nextQuery);
+  });
 });

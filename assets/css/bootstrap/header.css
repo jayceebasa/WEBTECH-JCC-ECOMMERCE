@@ -492,3 +492,126 @@ html {
 .cart-icon {
     position: relative;
 }
+
+/* Custom live search panel */
+.header-search-panel {
+    width: 100%;
+    background: #fff;
+    border-top: 1px solid #f0f0f2;
+    border-bottom: 1px solid #f0f0f2;
+    box-shadow: 0 8px 18px rgba(31, 20, 62, 0.08);
+    margin-bottom: 12px;
+}
+
+.header-search-panel-inner {
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+.header-search-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-search-input {
+    width: 100%;
+    border: 1px solid #d9d4e6;
+    border-radius: 14px;
+    padding: 10px 14px;
+    font: 500 14px/1.4 "Poppins", sans-serif;
+    color: #1a093e;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.header-search-input:focus {
+    border-color: #a88ec3;
+    box-shadow: 0 0 0 3px rgba(168, 142, 195, 0.18);
+}
+
+.header-search-close {
+    border: none;
+    background: #1a093e;
+    color: #fff;
+    border-radius: 10px;
+    font: 600 13px/1 "Poppins", sans-serif;
+    padding: 10px 12px;
+    white-space: nowrap;
+}
+
+.header-search-results {
+    margin-top: 10px;
+    max-height: 320px;
+    overflow-y: auto;
+    display: grid;
+    gap: 8px;
+}
+
+.header-search-empty {
+    margin: 0;
+    padding: 8px 2px;
+    font: 500 13px/1.4 "Poppins", sans-serif;
+    color: #6f6785;
+}
+
+.header-search-item,
+.header-search-view-all {
+    border: 1px solid #ece8f4;
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px 12px;
+    text-align: left;
+    font-family: "Poppins", sans-serif;
+    color: #1a093e;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.header-search-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.header-search-item-name {
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.header-search-item-price {
+    font-size: 13px;
+    font-weight: 600;
+    color: #5e4c86;
+}
+
+.header-search-item:hover,
+.header-search-view-all:hover {
+    border-color: #c5b2eb;
+    background: #faf8ff;
+    box-shadow: 0 4px 10px rgba(168, 142, 195, 0.12);
+}
+
+.header-search-view-all {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .header-search-panel-inner {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .header-search-controls {
+        gap: 8px;
+    }
+
+    .header-search-close {
+        padding: 10px 11px;
+    }
+
+    .header-search-results {
+        max-height: 260px;
+    }
+}

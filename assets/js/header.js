@@ -6,6 +6,8 @@ class Header {
 
     init() {
         this.setupMobileMenu();
+        this.setupSearchButtons();
+        this.setupSearchPanel();
         // Don't call setActiveNavigation here - it will be called from partials-loader
     }
 
@@ -26,6 +28,250 @@ class Header {
                 }
             });
         });
+    }
+
+    setupSearchButtons() {
+        const searchButtons = document.querySelectorAll('.search-btn');
+        if (!searchButtons.length) return;
+
+        searchButtons.forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                this.handleSearchClick();
+            });
+        });
+    }
+
+    setupSearchPanel() {
+        this.searchPanel = document.getElementById('headerSearchPanel');
+        this.searchInput = document.getElementById('headerSearchInput');
+        this.searchResults = document.getElementById('headerSearchResults');
+        this.searchCloseButton = document.getElementById('headerSearchClose');
+        this.searchProducts = [];
+        this.searchProductsPromise = null;
+
+        if (!this.searchPanel || !this.searchInput || !this.searchResults || !this.searchCloseButton) {
+            return;
+        }
+
+        this.searchCloseButton.addEventListener('click', () => {
+            this.closeSearchPanel();
+        });
+
+        this.searchInput.addEventListener('input', () => {
+            const query = this.searchInput.value.trim();
+            this.handleLiveSearch(query);
+        });
+
+        this.searchInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                this.goToShopSearch(this.searchInput.value.trim());
+            }
+        });
+
+        this.searchResults.addEventListener('click', (event) => {
+            const productButton = event.target.closest('[data-search-product-id]');
+            if (productButton) {
+                const productId = productButton.getAttribute('data-search-product-id');
+                if (productId) {
+                    window.location.href = this.getSingleProductPath(productId);
+                }
+                return;
+            }
+
+            const viewAllButton = event.target.closest('[data-search-view-all]');
+            if (viewAllButton) {
+                const query = this.searchInput.value.trim();
+                this.goToShopSearch(query);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                this.closeSearchPanel();
+            }
+        });
+
+        this.renderEmptySearchHint();
+    }
+
+    handleSearchClick() {
+        if (!this.searchPanel || !this.searchInput) {
+            this.goToShopSearch('');
+            return;
+        }
+
+        const panelWasHidden = this.searchPanel.hasAttribute('hidden');
+
+        if (panelWasHidden) {
+            this.openSearchPanel();
+        } else {
+            this.closeSearchPanel();
+        }
+    }
+
+    openSearchPanel() {
+        if (!this.searchPanel || !this.searchInput) return;
+
+        this.searchPanel.removeAttribute('hidden');
+
+        const params = new URLSearchParams(window.location.search);
+        const queryFromUrl = (params.get('search') || '').trim();
+        if (queryFromUrl && !this.searchInput.value.trim()) {
+            this.searchInput.value = queryFromUrl;
+        }
+
+        this.handleLiveSearch(this.searchInput.value.trim());
+
+        // Delay focus slightly so the panel is visible before keyboard opens on mobile.
+        setTimeout(() => {
+            this.searchInput.focus();
+            this.searchInput.select();
+        }, 30);
+    }
+
+    closeSearchPanel() {
+        if (!this.searchPanel) return;
+        this.searchPanel.setAttribute('hidden', 'hidden');
+    }
+
+    async handleLiveSearch(query) {
+        this.syncShopSearch(query);
+        await this.ensureSearchProductsLoaded();
+        this.renderSearchResults(query);
+    }
+
+    async ensureSearchProductsLoaded() {
+        if (this.searchProducts.length > 0) return;
+        if (this.searchProductsPromise) {
+            await this.searchProductsPromise;
+            return;
+        }
+
+        this.searchProductsPromise = this.fetchSearchProducts();
+        await this.searchProductsPromise;
+        this.searchProductsPromise = null;
+    }
+
+    async fetchSearchProducts() {
+        if (typeof API_BASE === 'undefined') {
+            this.searchProducts = [];
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/products?limit=150&published=true`);
+            if (!response.ok) throw new Error(`Failed to load products: ${response.status}`);
+
+            const data = await response.json();
+            this.searchProducts = data.data || data.products || [];
+        } catch (error) {
+            console.error('Failed to load search products:', error);
+            this.searchProducts = [];
+        }
+    }
+
+    renderSearchResults(query) {
+        if (!this.searchResults) return;
+
+        const normalizedQuery = (query || '').toLowerCase();
+        if (!normalizedQuery) {
+            this.renderEmptySearchHint();
+            return;
+        }
+
+        const matches = this.searchProducts
+            .filter((product) => ((product?.name) || '').toLowerCase().includes(normalizedQuery))
+            .slice(0, 8);
+
+        if (!matches.length) {
+            this.searchResults.innerHTML = `
+                <p class="header-search-empty">No products match "${this.escapeHtml(query)}" yet.</p>
+                <button type="button" class="header-search-view-all" data-search-view-all="true">Search in shop</button>
+            `;
+            return;
+        }
+
+        const itemsMarkup = matches.map((product) => {
+            const productId = product._id || product.id || '';
+            const safeName = this.escapeHtml(product.name || 'Unnamed product');
+            const priceValue = Number(product.price || 0);
+            const safePrice = `₱${priceValue.toLocaleString()}.00`;
+
+            return `
+                <button type="button" class="header-search-item" data-search-product-id="${this.escapeHtml(String(productId))}">
+                    <span class="header-search-item-name">${safeName}</span>
+                    <span class="header-search-item-price">${safePrice}</span>
+                </button>
+            `;
+        }).join('');
+
+        this.searchResults.innerHTML = `${itemsMarkup}
+            <button type="button" class="header-search-view-all" data-search-view-all="true">See all results in shop</button>
+        `;
+    }
+
+    renderEmptySearchHint() {
+        if (!this.searchResults) return;
+        this.searchResults.innerHTML = '<p class="header-search-empty">Type a product name and results will appear as you type.</p>';
+    }
+
+    goToShopSearch(query) {
+        const term = (query || '').trim();
+        if (this.isShopPage()) {
+            this.syncShopSearch(term);
+            return;
+        }
+
+        const shopPagePath = this.getShopPagePath();
+        const target = term
+            ? `${shopPagePath}?search=${encodeURIComponent(term)}`
+            : shopPagePath;
+
+        window.location.href = target;
+    }
+
+    isShopPage() {
+        return window.location.pathname.toLowerCase().includes('shop.html');
+    }
+
+    syncShopSearch(query) {
+        if (!this.isShopPage()) return;
+
+        const params = new URLSearchParams(window.location.search);
+        if (query) {
+            params.set('search', query);
+        } else {
+            params.delete('search');
+        }
+
+        const nextUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+        window.history.replaceState({}, '', nextUrl);
+        window.dispatchEvent(new CustomEvent('header-search', {
+            detail: { query }
+        }));
+    }
+
+    getShopPagePath() {
+        const isInsidePages = window.location.pathname.includes('/pages/');
+        return isInsidePages ? 'shop.html' : 'pages/shop.html';
+    }
+
+    getSingleProductPath(productId) {
+        const isInsidePages = window.location.pathname.includes('/pages/');
+        return isInsidePages
+            ? `singleProduct.html?id=${encodeURIComponent(productId)}`
+            : `pages/singleProduct.html?id=${encodeURIComponent(productId)}`;
+    }
+
+    escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     setActiveNavigation() {

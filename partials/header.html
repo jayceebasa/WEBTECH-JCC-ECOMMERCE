@@ -83,5 +83,21 @@
             </div>
         </div>
     </nav>
+    <section id="headerSearchPanel" class="header-search-panel" aria-label="Product search" hidden>
+        <div class="header-search-panel-inner container-fluid px-4">
+            <div class="header-search-controls">
+                <input
+                    id="headerSearchInput"
+                    class="header-search-input"
+                    type="search"
+                    placeholder="Type to search products..."
+                    autocomplete="off"
+                    aria-label="Search products"
+                >
+                <button id="headerSearchClose" class="header-search-close" type="button" aria-label="Close search">Close</button>
+            </div>
+            <div id="headerSearchResults" class="header-search-results" role="listbox" aria-label="Search results"></div>
+        </div>
+    </section>
     <div class="header-divider"></div>
 </header>
