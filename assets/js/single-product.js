@@ -90,4 +90,30 @@ function showError(message) {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
   loadProductDetails();
+
+  // Add to Cart button event
+  const addToCartBtn = document.querySelector('.add-to-cart-btn');
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener('click', async () => {
+      if (!currentProduct || !currentProduct._id) {
+        alert('Product not loaded.');
+        return;
+      }
+      addToCartBtn.disabled = true;
+      addToCartBtn.textContent = 'Adding...';
+      try {
+        await CartModule.addItem(currentProduct._id, 1);
+        addToCartBtn.textContent = 'Added!';
+        setTimeout(() => {
+          addToCartBtn.textContent = 'Add to Cart';
+          addToCartBtn.disabled = false;
+        }, 1200);
+        if (typeof updateCartBadge === 'function') updateCartBadge();
+      } catch (err) {
+        alert(err.message || 'Failed to add to cart.');
+        addToCartBtn.textContent = 'Add to Cart';
+        addToCartBtn.disabled = false;
+      }
+    });
+  }
 });

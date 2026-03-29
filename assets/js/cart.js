@@ -13,22 +13,73 @@
  */
 
 // TODO: Implement cart functionality when backend endpoints are available
+
 const CartModule = {
-  addItem: function(productId, quantity) {
-    console.warn('Cart feature not yet implemented');
+  async addItem(productId, quantity = 1) {
+    try {
+      const res = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ productId, quantity })
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || 'Failed to add to cart');
+      }
+      return await res.json();
+    } catch (err) {
+      console.error('Add to cart error:', err);
+      throw err;
+    }
   },
-  
-  getCart: function() {
-    console.warn('Cart feature not yet implemented');
-    return [];
+
+  async getCart() {
+    try {
+      const res = await fetch('/api/cart', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error('Failed to fetch cart');
+      return await res.json();
+    } catch (err) {
+      console.error('Get cart error:', err);
+      return { items: [] };
+    }
   },
-  
-  updateQuantity: function(itemId, quantity) {
-    console.warn('Cart feature not yet implemented');
+
+  async updateQuantity(productId, quantity) {
+    try {
+      const res = await fetch('/api/cart/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ productId, quantity })
+      });
+      if (!res.ok) throw new Error('Failed to update quantity');
+      return await res.json();
+    } catch (err) {
+      console.error('Update quantity error:', err);
+      throw err;
+    }
   },
-  
-  removeItem: function(itemId) {
-    console.warn('Cart feature not yet implemented');
+
+  async removeItem(productId) {
+    try {
+      const res = await fetch('/api/cart/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ productId })
+      });
+      if (!res.ok) throw new Error('Failed to remove item');
+      return await res.json();
+    } catch (err) {
+      console.error('Remove item error:', err);
+      throw err;
+    }
   }
 };
 

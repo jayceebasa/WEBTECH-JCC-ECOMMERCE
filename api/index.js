@@ -100,8 +100,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 
+
+const cartRoutes = require('../lib/routes/cart');
+app.use('/api/cart', cartRoutes);
 // TODO: Add more API routes here
-// - Cart routes
 // - Order routes
 // - User routes
 
