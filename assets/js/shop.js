@@ -1,8 +1,38 @@
 // Global variable to store all products
 let allProducts = [];
 
+function showProductsLoading(count = 6) {
+  const productsGrid = document.getElementById('productsGrid');
+  if (!productsGrid) return;
+
+  let skeletonHTML = '';
+  for (let i = 0; i < count; i += 1) {
+    skeletonHTML += `
+      <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
+        <div class="product-card skeleton-card" aria-hidden="true">
+          <div class="product-image skeleton-image"></div>
+          <div class="product-info">
+            <div class="skeleton-line skeleton-title"></div>
+            <div class="skeleton-line skeleton-price"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  skeletonHTML += `
+    <div class="col-12 shop-loading-note-wrap">
+      <p class="shop-loading-note">Loading products...</p>
+    </div>
+  `;
+
+  productsGrid.innerHTML = skeletonHTML;
+}
+
 // Load products from backend database
 async function loadProducts() {
+  showProductsLoading();
+
   try {
     const response = await fetch(`${API_BASE}/products?limit=100&published=true`);
     if (!response.ok) {

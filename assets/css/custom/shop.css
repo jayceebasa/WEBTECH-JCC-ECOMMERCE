@@ -143,6 +143,62 @@
   padding-top: 20px;
 }
 
+/* Shop loading skeleton */
+.skeleton-card {
+  pointer-events: none;
+}
+
+.skeleton-image,
+.skeleton-line {
+  position: relative;
+  overflow: hidden;
+  background: #ece8f3;
+}
+
+.skeleton-image::after,
+.skeleton-line::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.75) 50%, transparent 100%);
+  animation: shopShimmer 1.3s infinite;
+}
+
+.skeleton-title {
+  height: 14px;
+  border-radius: 6px;
+  margin: 0 auto 10px;
+  width: 78%;
+}
+
+.skeleton-price {
+  height: 14px;
+  border-radius: 6px;
+  margin: 0 auto;
+  width: 44%;
+}
+
+.shop-loading-note-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.shop-loading-note {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  color: #6f6385;
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+@keyframes shopShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .shop-header {

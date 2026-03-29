@@ -10,6 +10,7 @@ try {
 
 const LOCAL_CART_KEY = 'guestCart';
 const TOKEN_KEY = 'userToken';
+const productDetailsCache = new Map();
 
 function buildAuthHeaders(extraHeaders = {}) {
   const token = localStorage.getItem(TOKEN_KEY);
@@ -25,6 +26,10 @@ function isUserLoggedIn() {
 
 // Fetch single product details
 async function getProductDetails(productId) {
+  if (productId && productDetailsCache.has(productId)) {
+    return productDetailsCache.get(productId);
+  }
+
   try {
     console.log('[getProductDetails] Fetching product:', productId, 'API_BASE:', API_BASE);
     const res = await fetch(`${API_BASE}/products/${productId}`);
@@ -34,6 +39,9 @@ async function getProductDetails(productId) {
     }
     const data = await res.json();
     const product = data.data || data.product || data;
+    if (productId && product) {
+      productDetailsCache.set(productId, product);
+    }
     console.log('[getProductDetails] Got product data:', { 
       name: product.name, 
       price: product.price, 
@@ -45,6 +53,27 @@ async function getProductDetails(productId) {
     console.error('[getProductDetails] Error fetching product:', err);
     return null;
   }
+}
+
+function getItemProductId(item) {
+  return item.productId || (item.product && item.product._id) || '';
+}
+
+async function resolveProductForItem(item) {
+  const productId = getItemProductId(item);
+
+  if (item.product) {
+    if (productId) {
+      productDetailsCache.set(productId, item.product);
+    }
+    return item.product;
+  }
+
+  if (!productId) {
+    return null;
+  }
+
+  return getProductDetails(productId);
 }
 
 // CartModule - main cart operations
@@ -207,39 +236,26 @@ async function renderCartPage() {
     console.log('[renderCartPage] No productsSection element found');
     return;
   }
-
-  productsSection.innerHTML = '';
+  const resolvedItems = await Promise.all(items.map(async (item) => {
+    const product = await resolveProductForItem(item);
+    return {
+      item,
+      product,
+      productId: getItemProductId(item)
+    };
+  }));
 
   if (items.length === 0) {
     productsSection.innerHTML = '<div class="empty-cart-message"><p>Your cart is empty.</p><p><a href="shop.html">Continue Shopping</a></p></div>';
   } else {
-    // Fetch product details for all items
-    for (const item of items) {
-      console.log('[renderCartPage] Processing item:', item);
-      
-      let product = item.product || null;
-      
-      // For guest users, item only has productId, need to fetch details
-      if (!product && item.productId) {
-        console.log('[renderCartPage] Item is guest format, fetching details...');
-        product = await getProductDetails(item.productId);
-        console.log('[renderCartPage] Fetched product:', product);
-      }
+    let productsHTML = '';
 
+    for (const { item, product, productId } of resolvedItems) {
       const productName = product && product.name ? product.name : 'Unknown Product';
       const productPrice = product && product.price ? product.price : 0;
-      const productId = item.productId || (item.product && item.product._id) || '';
       const imagePath = product ? getImagePath(product) : '';
 
-      console.log('[renderCartPage] Rendering:', { 
-        productName, 
-        productPrice, 
-        productId, 
-        productImage: product ? product.image : 'no product',
-        imagePath 
-      });
-
-      const cartItemHTML = `
+      productsHTML += `
         <div class="product-card">
           <div class="product-image">
             <img src="${imagePath}" alt="${productName}">
@@ -258,11 +274,12 @@ async function renderCartPage() {
           </div>
         </div>
       `;
-      productsSection.innerHTML += cartItemHTML;
     }
 
+    productsSection.innerHTML = productsHTML;
+
     // Add event listeners
-    document.querySelectorAll('.quantity-btn.decrease').forEach(btn => {
+    productsSection.querySelectorAll('.quantity-btn.decrease').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const productId = e.target.getAttribute('data-product-id');
         const quantitySpan = e.target.nextElementSibling;
@@ -271,7 +288,7 @@ async function renderCartPage() {
       });
     });
 
-    document.querySelectorAll('.quantity-btn.increase').forEach(btn => {
+    productsSection.querySelectorAll('.quantity-btn.increase').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const productId = e.target.getAttribute('data-product-id');
         const quantitySpan = e.target.previousElementSibling;
@@ -280,7 +297,7 @@ async function renderCartPage() {
       });
     });
 
-    document.querySelectorAll('.delete-btn').forEach(btn => {
+    productsSection.querySelectorAll('.delete-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const productId = e.target.getAttribute('data-product-id');
         window.removeCartItem(productId);
@@ -288,26 +305,23 @@ async function renderCartPage() {
     });
   }
 
-  // Render order summary
+  // Render order summary from already-resolved products (no extra fetches)
   const itemsBreakdown = document.getElementById('items-breakdown');
   let subtotal = 0;
-  
+
   if (itemsBreakdown) {
-    itemsBreakdown.innerHTML = '';
-    for (const item of items) {
-      let product = item.product || null;
+    let breakdownHTML = '';
 
-      if (!product && item.productId) {
-        product = await getProductDetails(item.productId);
-      }
-
+    for (const { item, product } of resolvedItems) {
       const productName = product && product.name ? product.name : 'Unknown Product';
       const productPrice = product && product.price ? product.price : 0;
       const lineTotal = productPrice * item.quantity;
       subtotal += lineTotal;
 
-      itemsBreakdown.innerHTML += `<div class="item-breakdown"><div class="item-row"><span class="item-name">${productName}</span><span>₱${lineTotal.toLocaleString()}.00</span></div><div class="item-row"><span class="item-details">x${item.quantity}</span></div></div>`;
+      breakdownHTML += `<div class="item-breakdown"><div class="item-row"><span class="item-name">${productName}</span><span>₱${lineTotal.toLocaleString()}.00</span></div><div class="item-row"><span class="item-details">x${item.quantity}</span></div></div>`;
     }
+
+    itemsBreakdown.innerHTML = breakdownHTML;
   }
 
   // Update totals
