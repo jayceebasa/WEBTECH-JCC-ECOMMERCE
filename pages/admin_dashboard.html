@@ -744,7 +744,7 @@
     async function loadDashboardStats() {
       try {
         // Fetch products count from API
-        const productsRes = await fetch('http://127.0.0.1:5000/api/products?limit=1', {
+        const productsRes = await fetch(`${adminAuth.API_BASE}/products?limit=1`, {
           credentials: 'include'
         });
         if (productsRes.ok) {
@@ -822,7 +822,7 @@
     async function loadDashboardData() {
       try {
         // Example: Fetch admin stats
-        const response = await fetch('http://127.0.0.1:5000/api/products', {
+        const response = await fetch(`${adminAuth.API_BASE}/products`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json'

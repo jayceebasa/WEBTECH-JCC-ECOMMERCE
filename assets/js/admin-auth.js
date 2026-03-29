@@ -3,9 +3,15 @@
  * Handles authentication using httpOnly cookies (most secure)
  */
 
+const ADMIN_API_BASE = (typeof API_BASE !== 'undefined')
+  ? API_BASE
+  : ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? `${window.location.protocol}//${window.location.hostname}:5000/api`
+    : '/api');
+
 class AdminAuth {
   constructor() {
-    this.API_BASE = API_BASE;
+    this.API_BASE = ADMIN_API_BASE;
     this.userEmail = null; // Store in memory only, not localStorage
   }
 

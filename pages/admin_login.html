@@ -133,6 +133,28 @@
       text-align: center;
     }
 
+    .back-to-shop {
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    .back-to-shop a {
+      display: inline-block;
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #c8b8de;
+      border-radius: 5px;
+      text-decoration: none;
+      color: #5b3e87;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+
+    .back-to-shop a:hover {
+      background: #f4effb;
+    }
+
     #previewModeBtn {
       display: none;
     }
@@ -152,7 +174,7 @@
     <form id="loginForm" onsubmit="handleLogin(event)">
       <div class="form-group">
         <label for="email">Email Address</label>
-        <input type="email" id="email" name="email" placeholder="admin@webtech-jcc.com" required>
+        <input type="email" id="email" name="email" placeholder="admin@gmail.com" required>
       </div>
       
       <div class="form-group">
@@ -168,8 +190,12 @@
       <button type="submit" id="submitBtn">Sign In</button>
     </form>
 
+    <div class="back-to-shop">
+      <a href="shop.html">Back to Shop</a>
+    </div>
+
     <div class="preview-mode">
-      <small style="color: #999;">username: admin@gmail.com <br>password: admin123</small>
+      <small style="color: #999;">username: admin@gmail.com <br>password: Adm1n@JCC!2026Secure</small>
     </div>
   </div>
 
@@ -205,5 +231,4 @@
     }
   </script>
 </body>
-</html>
 </html>

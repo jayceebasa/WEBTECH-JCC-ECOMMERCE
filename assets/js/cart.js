@@ -10,7 +10,44 @@ try {
 
 const LOCAL_CART_KEY = 'guestCart';
 const TOKEN_KEY = 'userToken';
+const CART_SIZE_SELECTIONS_KEY = 'cartSelectedSizes';
 const productDetailsCache = new Map();
+let cartSizeSelections = (() => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(CART_SIZE_SELECTIONS_KEY) || '{}');
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch (error) {
+    return {};
+  }
+})();
+
+function saveCartSizeSelections() {
+  localStorage.setItem(CART_SIZE_SELECTIONS_KEY, JSON.stringify(cartSizeSelections));
+}
+
+function setSelectedSize(productId, size) {
+  if (!productId) return;
+  if (size) {
+    cartSizeSelections[productId] = size;
+  } else {
+    delete cartSizeSelections[productId];
+  }
+  saveCartSizeSelections();
+}
+
+function syncGuestCartSelectedSize(productId, size) {
+  if (isUserLoggedIn() || !productId) return;
+
+  const cart = JSON.parse(localStorage.getItem(LOCAL_CART_KEY) || '[]');
+  const updated = cart.map((item) => {
+    if (item.productId === productId) {
+      return { ...item, selectedSize: size || '' };
+    }
+    return item;
+  });
+
+  localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(updated));
+}
 
 function buildAuthHeaders(extraHeaders = {}) {
   const token = localStorage.getItem(TOKEN_KEY);
@@ -59,6 +96,35 @@ function getItemProductId(item) {
   return item.productId || (item.product && item.product._id) || '';
 }
 
+function getProductType(product) {
+  if (!product) return '';
+  return (product.details && product.details.type) || product.type || '';
+}
+
+function getProductSizes(product) {
+  if (!product || !Array.isArray(product.sizes)) return [];
+  return product.sizes
+    .map((size) => String(size || '').trim())
+    .filter(Boolean);
+}
+
+function getSelectedSizeForItem(productId, product, item) {
+  const availableSizes = getProductSizes(product);
+  if (!availableSizes.length) return '';
+
+  const itemSize = item && item.selectedSize ? String(item.selectedSize).trim() : '';
+  if (itemSize && availableSizes.includes(itemSize)) {
+    return itemSize;
+  }
+
+  const savedSize = productId ? cartSizeSelections[productId] : '';
+  if (savedSize && availableSizes.includes(savedSize)) {
+    return savedSize;
+  }
+
+  return availableSizes[0];
+}
+
 async function resolveProductForItem(item) {
   const productId = getItemProductId(item);
 
@@ -78,8 +144,8 @@ async function resolveProductForItem(item) {
 
 // CartModule - main cart operations
 const CartModule = {
-  async addItem(productId, quantity = 1) {
-    console.log('[CartModule.addItem] Adding:', { productId, quantity, isLoggedIn: isUserLoggedIn() });
+  async addItem(productId, quantity = 1, selectedSize = '') {
+    console.log('[CartModule.addItem] Adding:', { productId, quantity, selectedSize, isLoggedIn: isUserLoggedIn() });
     
     if (isUserLoggedIn()) {
       // Logged in user - use API
@@ -88,7 +154,7 @@ const CartModule = {
           method: 'POST',
           headers: buildAuthHeaders({ 'Content-Type': 'application/json' }),
           credentials: 'include',
-          body: JSON.stringify({ productId, quantity })
+          body: JSON.stringify({ productId, quantity, selectedSize })
         });
         if (!res.ok) throw new Error('Failed to add to cart: ' + res.status);
         return await res.json();
@@ -102,8 +168,11 @@ const CartModule = {
       const idx = cart.findIndex(item => item.productId === productId);
       if (idx > -1) {
         cart[idx].quantity += quantity;
+        if (selectedSize) {
+          cart[idx].selectedSize = selectedSize;
+        }
       } else {
-        cart.push({ productId, quantity });
+        cart.push({ productId, quantity, selectedSize: selectedSize || '' });
       }
       localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(cart));
       console.log('[CartModule.addItem] Saved to localStorage:', cart);
@@ -156,6 +225,26 @@ const CartModule = {
         localStorage.setItem(LOCAL_CART_KEY, JSON.stringify(cart));
       }
       return { items: cart };
+    }
+  },
+
+  async updateSelectedSize(productId, selectedSize) {
+    if (!isUserLoggedIn()) {
+      return { success: true };
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/cart/update`, {
+        method: 'POST',
+        headers: buildAuthHeaders({ 'Content-Type': 'application/json' }),
+        credentials: 'include',
+        body: JSON.stringify({ productId, selectedSize })
+      });
+      if (!res.ok) throw new Error('Failed to update size');
+      return await res.json();
+    } catch (err) {
+      console.error('[CartModule.updateSelectedSize] Error:', err);
+      throw err;
     }
   },
 
@@ -254,6 +343,18 @@ async function renderCartPage() {
       const productName = product && product.name ? product.name : 'Unknown Product';
       const productPrice = product && product.price ? product.price : 0;
       const imagePath = product ? getImagePath(product) : '';
+      const productType = getProductType(product);
+      const availableSizes = getProductSizes(product);
+      const selectedSize = getSelectedSizeForItem(productId, product, item);
+
+      if (selectedSize) {
+        setSelectedSize(productId, selectedSize);
+        syncGuestCartSelectedSize(productId, selectedSize);
+      }
+
+      const sizeSelectorHtml = availableSizes.length
+        ? `<div class="size-selector"><label for="size-${productId}">Size</label><select id="size-${productId}" class="cart-size-select" data-product-id="${productId}">${availableSizes.map((size) => `<option value="${size}" ${size === selectedSize ? 'selected' : ''}>${size}</option>`).join('')}</select></div>`
+        : '';
 
       productsHTML += `
         <div class="product-card">
@@ -263,6 +364,8 @@ async function renderCartPage() {
           <div class="product-details">
             <h3 class="product-title">${productName}</h3>
             <p class="product-price">₱${productPrice.toLocaleString()}.00</p>
+            ${productType ? `<p class="product-color">Type: ${productType}</p>` : ''}
+            ${sizeSelectorHtml}
           </div>
           <div class="controls-wrapper">
             <div class="quantity-section">
@@ -303,6 +406,24 @@ async function renderCartPage() {
         window.removeCartItem(productId);
       });
     });
+
+    productsSection.querySelectorAll('.cart-size-select').forEach(select => {
+      select.addEventListener('change', async (e) => {
+        const productId = e.target.getAttribute('data-product-id');
+        const size = e.target.value;
+        try {
+          setSelectedSize(productId, size);
+          syncGuestCartSelectedSize(productId, size);
+          if (isUserLoggedIn()) {
+            await CartModule.updateSelectedSize(productId, size);
+          }
+        } catch (error) {
+          console.error('[cart-size-select] Failed to update size:', error);
+          alert('Failed to update size. Please try again.');
+        }
+        renderCartPage();
+      });
+    });
   }
 
   // Render order summary from already-resolved products (no extra fetches)
@@ -312,13 +433,21 @@ async function renderCartPage() {
   if (itemsBreakdown) {
     let breakdownHTML = '';
 
-    for (const { item, product } of resolvedItems) {
+    for (const { item, product, productId } of resolvedItems) {
       const productName = product && product.name ? product.name : 'Unknown Product';
       const productPrice = product && product.price ? product.price : 0;
       const lineTotal = productPrice * item.quantity;
+      const productType = getProductType(product);
+      const selectedSize = getSelectedSizeForItem(productId, product, item);
+      const detailParts = [];
+
+      if (productType) detailParts.push(`Type: ${productType}`);
+      if (selectedSize) detailParts.push(`Size: ${selectedSize}`);
+
+      const detailText = detailParts.join(' | ');
       subtotal += lineTotal;
 
-      breakdownHTML += `<div class="item-breakdown"><div class="item-row"><span class="item-name">${productName}</span><span>₱${lineTotal.toLocaleString()}.00</span></div><div class="item-row"><span class="item-details">x${item.quantity}</span></div></div>`;
+      breakdownHTML += `<div class="item-breakdown"><div class="item-row"><span class="item-name">${productName}</span><span>₱${lineTotal.toLocaleString()}.00</span></div><div class="item-row"><span class="item-details">x${item.quantity}${detailText ? ` | ${detailText}` : ''}</span></div></div>`;
     }
 
     itemsBreakdown.innerHTML = breakdownHTML;
@@ -341,6 +470,7 @@ window.updateCartQuantity = async function(productId, newQuantity) {
 };
 
 window.removeCartItem = async function(productId) {
+  setSelectedSize(productId, '');
   await CartModule.removeItem(productId);
   renderCartPage();
 };
